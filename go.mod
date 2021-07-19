@@ -60,4 +60,4 @@ replace github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alp
 
 replace github.com/99designs/keyring => github.com/cosmos/keyring v1.1.7-0.20210622111912-ef00f8ac3d76
 
-replace github.com/tendermint/tendermint => github.com/jayt106/tendermint v0.34.12-0.20210719154014-90dfbc542012
+replace github.com/tendermint/tendermint => github.com/jayt106/tendermint v0.34.12-0.20210719181457-bbbe993be1e2
