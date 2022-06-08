@@ -24,6 +24,9 @@ func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 			ctx := GetServerContextFromCmd(cmd)
 			cfg := ctx.Config
 			home := cfg.RootDir
+
+			fmt.Printf("migrated home: %s, dst: %s\n", defaultNodeHome, defaultDBDst)
+
 			db, err := openDB(home, GetAppDBBackend(ctx.Viper))
 			if err != nil {
 				return err
