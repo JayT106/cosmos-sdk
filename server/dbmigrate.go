@@ -15,11 +15,6 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
-func init() {
-	DBMigrateCmd.Flags().String(flags.FlagHome, home, "The application home directory")
-	DBMigrateCmd.Flags().String(flags.FlagDst, dst, "The migrating db dst")
-}
-
 // ExportCmd dumps app state to JSON.
 func DBMigrateCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -27,8 +22,9 @@ func DBMigrateCmd() *cobra.Command {
 		Short: "store migrate from v1 to v2",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := GetServerContextFromCmd(cmd)
-			cfg := ctx.Config
-			home := cfg.RootDir
+
+			home, _ := cmd.Flags().GetString(flags.FlagHome)
+			dst, _ := cmd.Flags().GetString(flags.FlagDst)
 
 			fmt.Printf("migrated home: %s, dst: %s\n", home, dst)
 
@@ -84,6 +80,9 @@ func DBMigrateCmd() *cobra.Command {
 			return nil
 		},
 	}
+
+	cmd.Flags().String(flags.FlagHome, "home", "The application home directory")
+	cmd.Flags().String(flags.FlagDst, "dst", "The migrating db dst")
 
 	return cmd
 }
