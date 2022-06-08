@@ -33,9 +33,15 @@ func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 			db = dbm.NewPrefixDB(db, []byte(prefix))
 			cms := rootmulti.NewStore(db, ctx.Logger)
 
-			dbSS := rocksdb.NewDB(defaultDBDst + "_ss")
+			dbSS, err := rocksdb.NewDB(defaultDBDst + "_ss")
+			if err != nil {
+				return err
+			}
 
-			dbSC := rocksdb.NewDB(defaultDBDst + "_sc")
+			dbSC, err := rocksdb.NewDB(defaultDBDst + "_sc")
+			if err != nil {
+				return err
+			}
 
 			storeConfig := multi.DefaultStoreConfig()
 			storeConfig.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
