@@ -15,8 +15,13 @@ import (
 	dbm "github.com/tendermint/tm-db"
 )
 
+func init() {
+	DBMigrateCmd.Flags().String(flags.FlagHome, home, "The application home directory")
+	DBMigrateCmd.Flags().String(flags.FlagDst, dst, "The migrating db dst")
+}
+
 // ExportCmd dumps app state to JSON.
-func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
+func DBMigrateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dbmigrate",
 		Short: "store migrate from v1 to v2",
@@ -25,7 +30,7 @@ func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 			cfg := ctx.Config
 			home := cfg.RootDir
 
-			fmt.Printf("migrated home: %s, dst: %s\n", defaultNodeHome, defaultDBDst)
+			fmt.Printf("migrated home: %s, dst: %s\n", home, dst)
 
 			db, err := openDB(home, GetAppDBBackend(ctx.Viper))
 			if err != nil {
@@ -36,12 +41,12 @@ func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 			db = dbm.NewPrefixDB(db, []byte(prefix))
 			cms := rootmulti.NewStore(db, ctx.Logger)
 
-			dbSS, err := rocksdb.NewDB(defaultDBDst + "_ss")
+			dbSS, err := rocksdb.NewDB(dst + "_ss")
 			if err != nil {
 				return err
 			}
 
-			dbSC, err := rocksdb.NewDB(defaultDBDst + "_sc")
+			dbSC, err := rocksdb.NewDB(dst + "_sc")
 			if err != nil {
 				return err
 			}
@@ -49,6 +54,7 @@ func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 			storeConfig := multi.DefaultStoreConfig()
 			storeConfig.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
 			storeConfig.StateCommitmentDB = dbSC
+			fmt.Printf("migrated home: %s, dst: %s\n", home, dst)
 			v2Store, err := multi.MigrateFromV1(cms, dbSS, storeConfig)
 			if err != nil {
 				return err
@@ -79,7 +85,5 @@ func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
-	cmd.Flags().String(flags.FlagDst, defaultDBDst, "The migrating db dst")
 	return cmd
 }
