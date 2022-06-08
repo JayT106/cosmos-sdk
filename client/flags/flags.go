@@ -79,6 +79,7 @@ const (
 	FlagReverse          = "reverse"
 	FlagTip              = "tip"
 	FlagAux              = "aux"
+	FlagDst              = "dst"
 
 	// Tendermint logging flags
 	FlagLogLevel  = "log_level"

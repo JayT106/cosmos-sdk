@@ -16,7 +16,7 @@ import (
 )
 
 // ExportCmd dumps app state to JSON.
-func DBMigrateCmd(defaultNodeHome string) *cobra.Command {
+func DBMigrateCmd(defaultNodeHome string, defaultDBDst string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "dbmigrate",
 		Short: "store migrate from v1 to v2",
@@ -33,9 +33,9 @@ func DBMigrateCmd(defaultNodeHome string) *cobra.Command {
 			db = dbm.NewPrefixDB(db, []byte(prefix))
 			cms := rootmulti.NewStore(db, ctx.Logger)
 
-			dbSS := rocksdb.NewDB(defaultNodeHome + "_ss")
+			dbSS := rocksdb.NewDB(defaultDBDst + "_ss")
 
-			dbSC := rocksdb.NewDB(defaultNodeHome + "_sc")
+			dbSC := rocksdb.NewDB(defaultDBDst + "_sc")
 
 			storeConfig := multi.DefaultStoreConfig()
 			storeConfig.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
@@ -71,5 +71,6 @@ func DBMigrateCmd(defaultNodeHome string) *cobra.Command {
 	}
 
 	cmd.Flags().String(flags.FlagHome, defaultNodeHome, "The application home directory")
+	cmd.Flags().String(flags.FlagDst, defaultDBDst, "The migrating db dst")
 	return cmd
 }
