@@ -1,6 +1,8 @@
 package multi
 
 import (
+	"fmt"
+
 	dbm "github.com/cosmos/cosmos-sdk/db"
 	"github.com/cosmos/cosmos-sdk/store/iavl"
 	"github.com/cosmos/cosmos-sdk/store/mem"
@@ -46,16 +48,22 @@ func MigrateFromV1(rootMultiStore *v1Store.Store, store2db dbm.DBConnection, sto
 
 	// iterate through the rootmulti stores and save the key/values into smt tree
 	for _, store := range stores {
-		subStore, err := rootStore.getSubstore(store.name)
-		if err != nil {
-			return nil, err
-		}
+		fmt.Printf("store: %s\n", store.name)
+
+		// subStore, err := rootStore.getSubstore(store.name)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
 		// iterate all iavl tree node key/values
 		iterator := store.Iterator(nil, nil)
+		count := 0
 		for ; iterator.Valid(); iterator.Next() {
 			// set the iavl key,values into smt node
-			subStore.Set(iterator.Key(), iterator.Value())
+			//subStore.Set(iterator.Key(), iterator.Value())
+			count++
 		}
+		fmt.Printf("old store keys: %d\n", count)
 	}
 
 	// commit the all key/values from iavl to smt tree (SMT Store)
