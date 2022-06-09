@@ -11,7 +11,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/db/rocksdb"
 	pruningtypes "github.com/cosmos/cosmos-sdk/pruning/types"
 	"github.com/cosmos/cosmos-sdk/store/rootmulti"
+	storetypes "github.com/cosmos/cosmos-sdk/store/types"
 	"github.com/cosmos/cosmos-sdk/store/v2alpha1/multi"
+	sdktypes "github.com/cosmos/cosmos-sdk/types"
 	dbm "github.com/tendermint/tm-db"
 )
 
@@ -26,16 +28,16 @@ func DBMigrateCmd() *cobra.Command {
 			home, _ := cmd.Flags().GetString(flags.FlagHome)
 			dst, _ := cmd.Flags().GetString(flags.FlagDst)
 
-			fmt.Printf("migrated home: %s, dst: %s\n", home, dst)
+			fmt.Printf("migrating home: %s, dst: %s\n", home, dst)
 
-			db, err := openDB(home, GetAppDBBackend(ctx.Viper))
+			db, err := openDB(home, dbm.RocksDBBackend)
 			if err != nil {
 				return err
 			}
 
-			prefix := "s/k:evm/"
-			db = dbm.NewPrefixDB(db, []byte(prefix))
-			cms := rootmulti.NewStore(db, ctx.Logger)
+			evmKey := sdktypes.NewKVStoreKey("evm")
+			v1Store := rootmulti.NewStore(db, ctx.Logger)
+			v1Store.MountStoreWithDB(evmKey, storetypes.StoreTypeIAVL, nil)
 
 			dbSS, err := rocksdb.NewDB(dst + "_ss")
 			if err != nil {
@@ -50,8 +52,7 @@ func DBMigrateCmd() *cobra.Command {
 			storeConfig := multi.DefaultStoreConfig()
 			storeConfig.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
 			storeConfig.StateCommitmentDB = dbSC
-			fmt.Printf("migrated home: %s, dst: %s\n", home, dst)
-			v2Store, err := multi.MigrateFromV1(cms, dbSS, storeConfig)
+			v2Store, err := multi.MigrateFromV1(v1Store, dbSS, storeConfig)
 			if err != nil {
 				return err
 			}
