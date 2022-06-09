@@ -35,6 +35,13 @@ func DBMigrateCmd() *cobra.Command {
 				return err
 			}
 
+			defer func() {
+				err = db.Close()
+				if err != nil {
+					fmt.Printf("error closing db: %s\n", err)
+				}
+			}()
+
 			evmKey := sdktypes.NewKVStoreKey("evm")
 			v1Store := rootmulti.NewStore(db, ctx.Logger)
 			v1Store.MountStoreWithDB(evmKey, storetypes.StoreTypeIAVL, nil)
@@ -48,10 +55,24 @@ func DBMigrateCmd() *cobra.Command {
 				return err
 			}
 
+			defer func() {
+				err = dbSS.Close()
+				if err != nil {
+					fmt.Printf("error closing dbSS: %s\n", err)
+				}
+			}()
+
 			dbSC, err := rocksdb.NewDB(dst + "_sc")
 			if err != nil {
 				return err
 			}
+
+			defer func() {
+				err = dbSC.Close()
+				if err != nil {
+					fmt.Printf("error closing dbSC: %s\n", err)
+				}
+			}()
 
 			storeConfig := multi.DefaultStoreConfig()
 			storeConfig.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
@@ -61,25 +82,12 @@ func DBMigrateCmd() *cobra.Command {
 				return err
 			}
 
-			err = v2Store.Close()
-			if err != nil {
-				return err
-			}
-
-			err = dbSS.Close()
-			if err != nil {
-				return err
-			}
-
-			err = dbSC.Close()
-			if err != nil {
-				return err
-			}
-
-			err = db.Close()
-			if err != nil {
-				return err
-			}
+			defer func() {
+				err = v2Store.Close()
+				if err != nil {
+					fmt.Printf("error closing v2Store: %s\n", err)
+				}
+			}()
 
 			fmt.Printf("migrated from v1 to v2\n")
 			return nil
