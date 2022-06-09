@@ -38,6 +38,10 @@ func DBMigrateCmd() *cobra.Command {
 			evmKey := sdktypes.NewKVStoreKey("evm")
 			v1Store := rootmulti.NewStore(db, ctx.Logger)
 			v1Store.MountStoreWithDB(evmKey, storetypes.StoreTypeIAVL, nil)
+			err = v1Store.LoadLatestVersion()
+			if err != nil {
+				return err
+			}
 
 			dbSS, err := rocksdb.NewDB(dst + "_ss")
 			if err != nil {
