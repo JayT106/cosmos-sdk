@@ -10,6 +10,7 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"github.com/cosmos/cosmos-sdk/db"
 	dbm "github.com/cosmos/cosmos-sdk/db"
 	prefixdb "github.com/cosmos/cosmos-sdk/db/prefix"
 	util "github.com/cosmos/cosmos-sdk/internal"
@@ -913,3 +914,7 @@ func (tlm *traceListenMixin) wrapTraceListen(store types.KVStore, skey types.Sto
 
 func (s *Store) GetPruning() pruningtypes.PruningOptions   { return s.Pruning }
 func (s *Store) SetPruning(po pruningtypes.PruningOptions) { s.Pruning = po }
+
+func (s *Store) GetStoreReader() db.DBReader {
+	return s.stateDB.Reader()
+}

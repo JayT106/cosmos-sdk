@@ -4,6 +4,7 @@ package server
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -77,7 +78,15 @@ func DBMigrateCmd() *cobra.Command {
 			storeConfig := multi.DefaultStoreConfig()
 			storeConfig.Pruning = pruningtypes.NewPruningOptions(pruningtypes.PruningNothing)
 			storeConfig.StateCommitmentDB = dbSC
+
+			start := time.Now()
 			v2Store, err := multi.MigrateFromV1(v1Store, dbSS, storeConfig)
+			timespend := time.Now().Sub(start)
+			fmt.Printf("migration took %s\n", timespend)
+
+			id := v2Store.LastCommitID()
+			fmt.Printf("last commit id: %s\n", id)
+
 			if err != nil {
 				return err
 			}
@@ -88,6 +97,51 @@ func DBMigrateCmd() *cobra.Command {
 					fmt.Printf("error closing v2Store: %s\n", err)
 				}
 			}()
+
+			scIt, err := v2Store.StateCommitmentDB.Reader().Iterator(nil, nil)
+			if err != nil {
+				return err
+			}
+
+			defer func() {
+				err = scIt.Close()
+				if err != nil {
+					fmt.Printf("error closing scIt: %s\n", err)
+				}
+			}()
+
+			scSize := 0
+			scCount := 0
+			fmt.Printf("iterating over sc\n")
+			for scIt.Next() {
+				scSize += len(scIt.Key()) + len(scIt.Value())
+				scCount++
+			}
+
+			fmt.Printf("sc size: %d, count: %d\n", scSize, scCount)
+
+			ssIt, err := v2Store.GetStoreReader().Iterator(nil, nil)
+			if err != nil {
+				return err
+			}
+
+			defer func() {
+				err = ssIt.Close()
+				if err != nil {
+					fmt.Printf("error closing ssIt: %s\n", err)
+				}
+			}()
+
+			ssSize := 0
+			ssCount := 0
+			fmt.Printf("iterating over ss\n")
+			for ssIt.Next() {
+				ssSize += len(ssIt.Key()) + len(ssIt.Value())
+				ssCount++
+			}
+
+			fmt.Printf("ss size: %d, count: %d\n", ssSize, ssCount)
+			fmt.Printf("total v2 size: %d, count: %d\n", scSize+ssSize, scCount+ssCount)
 
 			fmt.Printf("migrated from v1 to v2\n")
 			return nil

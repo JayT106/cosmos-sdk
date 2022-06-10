@@ -50,26 +50,35 @@ func MigrateFromV1(rootMultiStore *v1Store.Store, store2db dbm.DBConnection, sto
 	for _, store := range stores {
 		fmt.Printf("store: %s\n", store.name)
 
-		// subStore, err := rootStore.getSubstore(store.name)
-		// if err != nil {
-		// 	return nil, err
-		// }
+		subStore, err := rootStore.getSubstore(store.name)
+		if err != nil {
+			return nil, err
+		}
 
 		// iterate all iavl tree node key/values
 		iterator := store.Iterator(nil, nil)
 		count := 0
+		setSize := 0
+		totalSize := 0
 		for ; iterator.Valid(); iterator.Next() {
 			// set the iavl key,values into smt node
-			//subStore.Set(iterator.Key(), iterator.Value())
+			subStore.Set(iterator.Key(), iterator.Value())
 			count++
-		}
-		fmt.Printf("old store keys: %d\n", count)
-	}
+			setSize += len(iterator.Key()) + len(iterator.Value())
 
-	// commit the all key/values from iavl to smt tree (SMT Store)
-	_, err = rootStore.commit(uint64(rootMultiStore.LastCommitID().Version))
-	if err != nil {
-		return nil, err
+			if setSize >= 500_000_000 {
+				// commit the all key/values from iavl to smt tree (SMT Store)
+				_, err = rootStore.commit(uint64(rootMultiStore.LastCommitID().Version))
+				if err != nil {
+					return nil, err
+				}
+				totalSize += setSize
+				setSize = 0
+
+				fmt.Printf("committed kvs: %d, totalSize: %d\n", count, totalSize)
+			}
+		}
+
 	}
 
 	return rootStore, nil
