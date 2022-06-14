@@ -96,12 +96,25 @@ func StoreCmpCmd() *cobra.Command {
 			lastIndex := 0
 			v1Time := int64(0)
 			v2Time := int64(0)
-
+			repeat := false
 			for v := 0; v < 1000; v++ {
 				v1KVStore := v1Store.GetCommitKVStore(evmKey)
 				v2KVStore := v2Store.GetKVStore(evmKey)
 
-				for i := lastIndex; i < (v+1)*100; i++ {
+				kvPerCommit := 100
+				kvRepeatPerCommit := 10
+
+				if repeat {
+					for i := lastIndex - 1; i >= lastIndex-kvRepeatPerCommit; i-- {
+						key := fmt.Sprintf("%053d", lastIndex)
+						value := make([]byte, 32)
+						_, _ = rand.Read(value)
+						v1KVStore.Set([]byte(key), value)
+						v2KVStore.Set([]byte(key), value)
+					}
+				}
+
+				for i := lastIndex; i < (v+1)*kvPerCommit; i++ {
 					key := fmt.Sprintf("%053d", i)
 					value := make([]byte, 32)
 					_, _ = rand.Read(value)
@@ -109,6 +122,7 @@ func StoreCmpCmd() *cobra.Command {
 					v2KVStore.Set([]byte(key), value)
 					lastIndex++
 				}
+
 				start := time.Now()
 				id := v1Store.Commit()
 				v1Time += time.Since(start).Nanoseconds()
@@ -116,6 +130,7 @@ func StoreCmpCmd() *cobra.Command {
 				id2 := v2Store.Commit()
 				v2Time += time.Since(start).Nanoseconds()
 				fmt.Printf("v1: %d, v2: %d, t1: %d, t2: %d\n", id, id2, v1Time, v2Time)
+				repeat = true
 			}
 			return nil
 		},
