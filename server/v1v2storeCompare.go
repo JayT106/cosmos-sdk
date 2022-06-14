@@ -97,7 +97,7 @@ func StoreCmpCmd() *cobra.Command {
 				v1KVStore := v1Store.GetCommitKVStore(evmKey)
 				v2KVStore := v2Store.GetKVStore(evmKey)
 
-				for i := lastIndex; i < 100; i++ {
+				for i := lastIndex; i < lastIndex+100; i++ {
 					key := fmt.Sprintf("%053d", i)
 					value := make([]byte, 32)
 					_, _ = rand.Read(value)
