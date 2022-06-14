@@ -5,6 +5,7 @@ package server
 import (
 	"crypto/rand"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
@@ -93,6 +94,9 @@ func StoreCmpCmd() *cobra.Command {
 			}()
 
 			lastIndex := 0
+			v1Time := int64(0)
+			v2Time := int64(0)
+
 			for v := 0; v < 1000; v++ {
 				v1KVStore := v1Store.GetCommitKVStore(evmKey)
 				v2KVStore := v2Store.GetKVStore(evmKey)
@@ -105,10 +109,13 @@ func StoreCmpCmd() *cobra.Command {
 					v2KVStore.Set([]byte(key), value)
 					lastIndex++
 				}
-
+				start := time.Now()
 				id := v1Store.Commit()
+				v1Time += time.Since(start).Nanoseconds()
+				start = time.Now()
 				id2 := v2Store.Commit()
-				fmt.Printf("version: %d,v1: %d, v2: %d\n", v, id, id2)
+				v2Time += time.Since(start).Nanoseconds()
+				fmt.Printf("v1: %d, v2: %d, t1: %d, t2: %d\n", id, id2, v1Time, v2Time)
 			}
 			return nil
 		},
