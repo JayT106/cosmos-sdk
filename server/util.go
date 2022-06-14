@@ -296,6 +296,7 @@ func AddCommands(rootCmd *cobra.Command, defaultNodeHome string, appCreator type
 		version.NewVersionCommand(),
 		NewRollbackCmd(defaultNodeHome),
 		DBMigrateCmd(),
+		StoreCmpCmd(),
 	)
 }
 
