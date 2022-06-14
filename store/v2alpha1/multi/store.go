@@ -602,10 +602,10 @@ func (s *Store) commit(target uint64) (id *types.CommitID, err error) {
 			err = util.CombineErrors(err, s.stateDB.Revert(), "stateDB.Revert also failed")
 		}
 	}()
-	err = s.stateDB.SaveVersion(target)
-	if err != nil {
-		return
-	}
+	// err = s.stateDB.SaveVersion(target)
+	// if err != nil {
+	// 	return
+	// }
 
 	stateTxn := s.stateDB.ReadWriter()
 	defer func() {
@@ -636,10 +636,10 @@ func (s *Store) commit(target uint64) (id *types.CommitID, err error) {
 			}
 		}()
 
-		err = s.StateCommitmentDB.SaveVersion(target)
-		if err != nil {
-			return
-		}
+		// err = s.StateCommitmentDB.SaveVersion(target)
+		// if err != nil {
+		// 	return
+		// }
 		stateCommitmentTxn = s.StateCommitmentDB.ReadWriter()
 	}
 
