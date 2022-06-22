@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/spf13/cobra"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -21,6 +22,8 @@ const (
 	FlagHeight           = "height"
 	FlagForZeroHeight    = "for-zero-height"
 	FlagJailAllowedAddrs = "jail-allowed-addrs"
+	FlagExportBinary     = "export-binary"
+	FlagExportDst        = "export-dst"
 )
 
 // ExportCmd dumps app state to JSON.
@@ -67,6 +70,8 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			height, _ := cmd.Flags().GetInt64(FlagHeight)
 			forZeroHeight, _ := cmd.Flags().GetBool(FlagForZeroHeight)
 			jailAllowedAddrs, _ := cmd.Flags().GetStringSlice(FlagJailAllowedAddrs)
+			exportBinary, _ := cmd.Flags().GetBool(FlagExportBinary)
+			exportDst, _ := cmd.Flags().GetString(FlagExportDst)
 
 			exported, err := appExporter(serverCtx.Logger, db, traceWriter, height, forZeroHeight, jailAllowedAddrs, serverCtx.Viper)
 			if err != nil {
@@ -105,7 +110,24 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				return err
 			}
 
-			cmd.Println(string(sdk.MustSortJSON(encoded)))
+			sortedJSON := sdk.MustSortJSON(encoded)
+
+			if exportBinary {
+				filePath := path.Join(exportDst, "genesis.json")
+				outputFile, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
+				if err != nil {
+					return err
+				}
+				defer outputFile.Close()
+
+				_, err = outputFile.Write(sortedJSON)
+				if err != nil {
+					return err
+				}
+			} else {
+				cmd.Println(string(sortedJSON))
+			}
+
 			return nil
 		},
 	}
@@ -114,6 +136,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 	cmd.Flags().Int64(FlagHeight, -1, "Export state from a particular height (-1 means latest height)")
 	cmd.Flags().Bool(FlagForZeroHeight, false, "Export state to start at height zero (perform preproccessing)")
 	cmd.Flags().StringSlice(FlagJailAllowedAddrs, []string{}, "Comma-separated list of operator addresses of jailed validators to unjail")
-
+	cmd.Flags().Bool(FlagExportBinary, false, "export the genesis to an encoded JSON binary file")
+	cmd.Flags().String(FlagExportDst, "./", "the destination of the exporting gensis binary file")
 	return cmd
 }
