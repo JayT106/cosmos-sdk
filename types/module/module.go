@@ -32,6 +32,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -338,7 +339,11 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) map[string]json.RawMessage {
 	genesisData := make(map[string]json.RawMessage)
 	for _, moduleName := range m.OrderExportGenesis {
+		fmt.Printf("exporting... module genesis %s\n", moduleName)
+		ts := time.Now()
 		genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
+		c := time.Since(ts)
+		fmt.Printf("exported module genesis %s, size %d, time: %s\n", moduleName, len(genesisData[moduleName]), c)
 	}
 
 	return genesisData

@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"time"
 
 	"github.com/spf13/cobra"
 	tmjson "github.com/tendermint/tendermint/libs/json"
@@ -73,10 +74,12 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			exportBinary, _ := cmd.Flags().GetBool(FlagExportBinary)
 			exportDst, _ := cmd.Flags().GetString(FlagExportDst)
 
+			t1 := time.Now()
 			exported, err := appExporter(serverCtx.Logger, db, traceWriter, height, forZeroHeight, jailAllowedAddrs, serverCtx.Viper)
 			if err != nil {
 				return fmt.Errorf("error exporting state: %v", err)
 			}
+			fmt.Printf("appExporter time %s\n", time.Since(t1))
 
 			doc, err := tmtypes.GenesisDocFromFile(serverCtx.Config.GenesisFile())
 			if err != nil {
@@ -105,14 +108,21 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			// NOTE: Tendermint uses a custom JSON decoder for GenesisDoc
 			// (except for stuff inside AppState). Inside AppState, we're free
 			// to encode as protobuf or amino.
+			fmt.Printf("starting marshal genesis\n")
+			t1 = time.Now()
 			encoded, err := tmjson.Marshal(doc)
+			fmt.Printf("done marshal genesis, time %s, size: %d\n", time.Since(t1), len(encoded))
 			if err != nil {
 				return err
 			}
 
+			fmt.Printf("starting marshal sort genesis\n")
+			t1 = time.Now()
 			sortedJSON := sdk.MustSortJSON(encoded)
+			fmt.Printf("done marshal sort genesis, time %s, size: %d\n", time.Since(t1), len(sortedJSON))
 
 			if exportBinary {
+				fmt.Printf("exporting Binary\n")
 				filePath := path.Join(exportDst, "genesis.json")
 				outputFile, err := os.OpenFile(filePath, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0644)
 				if err != nil {
@@ -120,7 +130,8 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				}
 				defer outputFile.Close()
 
-				_, err = outputFile.Write(sortedJSON)
+				n, err := outputFile.Write(sortedJSON)
+				fmt.Printf("exported Binary, size: %d\n", n)
 				if err != nil {
 					return err
 				}
