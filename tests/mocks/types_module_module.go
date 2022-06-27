@@ -212,6 +212,20 @@ func (mr *MockAppModuleGenesisMockRecorder) ExportGenesis(arg0, arg1 interface{}
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportGenesis", reflect.TypeOf((*MockAppModuleGenesis)(nil).ExportGenesis), arg0, arg1)
 }
 
+// ExportGenesisTo mocks base method.
+func (m *MockAppModuleGenesis) ExportGenesisTo(arg0 types0.Context, arg1 codec.JSONCodec, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExportGenesisTo", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExportGenesisTo indicates an expected call of ExportGenesisTo.
+func (mr *MockAppModuleGenesisMockRecorder) ExportGenesisTo(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportGenesisTo", reflect.TypeOf((*MockAppModuleGenesis)(nil).ExportGenesisTo), arg0, arg1, arg2)
+}
+
 // GetQueryCmd mocks base method.
 func (m *MockAppModuleGenesis) GetQueryCmd() *cobra.Command {
 	m.ctrl.T.Helper()
@@ -252,6 +266,21 @@ func (m *MockAppModuleGenesis) InitGenesis(arg0 types0.Context, arg1 codec.JSONC
 func (mr *MockAppModuleGenesisMockRecorder) InitGenesis(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitGenesis", reflect.TypeOf((*MockAppModuleGenesis)(nil).InitGenesis), arg0, arg1, arg2)
+}
+
+// InitGenesisFrom mocks base method.
+func (m *MockAppModuleGenesis) InitGenesisFrom(arg0 types0.Context, arg1 codec.JSONCodec, arg2 string) ([]types1.ValidatorUpdate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitGenesisFrom", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]types1.ValidatorUpdate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitGenesisFrom indicates an expected call of InitGenesisFrom.
+func (mr *MockAppModuleGenesisMockRecorder) InitGenesisFrom(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitGenesisFrom", reflect.TypeOf((*MockAppModuleGenesis)(nil).InitGenesisFrom), arg0, arg1, arg2)
 }
 
 // Name mocks base method.
@@ -421,6 +450,20 @@ func (mr *MockAppModuleMockRecorder) ExportGenesis(arg0, arg1 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportGenesis", reflect.TypeOf((*MockAppModule)(nil).ExportGenesis), arg0, arg1)
 }
 
+// ExportGenesisTo mocks base method.
+func (m *MockAppModule) ExportGenesisTo(arg0 types0.Context, arg1 codec.JSONCodec, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExportGenesisTo", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ExportGenesisTo indicates an expected call of ExportGenesisTo.
+func (mr *MockAppModuleMockRecorder) ExportGenesisTo(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExportGenesisTo", reflect.TypeOf((*MockAppModule)(nil).ExportGenesisTo), arg0, arg1, arg2)
+}
+
 // GetQueryCmd mocks base method.
 func (m *MockAppModule) GetQueryCmd() *cobra.Command {
 	m.ctrl.T.Helper()
@@ -461,6 +504,21 @@ func (m *MockAppModule) InitGenesis(arg0 types0.Context, arg1 codec.JSONCodec, a
 func (mr *MockAppModuleMockRecorder) InitGenesis(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitGenesis", reflect.TypeOf((*MockAppModule)(nil).InitGenesis), arg0, arg1, arg2)
+}
+
+// InitGenesisFrom mocks base method.
+func (m *MockAppModule) InitGenesisFrom(arg0 types0.Context, arg1 codec.JSONCodec, arg2 string) ([]types1.ValidatorUpdate, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitGenesisFrom", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]types1.ValidatorUpdate)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitGenesisFrom indicates an expected call of InitGenesisFrom.
+func (mr *MockAppModuleMockRecorder) InitGenesisFrom(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitGenesisFrom", reflect.TypeOf((*MockAppModule)(nil).InitGenesisFrom), arg0, arg1, arg2)
 }
 
 // LegacyQuerierHandler mocks base method.
