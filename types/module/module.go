@@ -234,6 +234,7 @@ type Manager struct {
 	OrderBeginBlockers []string
 	OrderEndBlockers   []string
 	OrderMigrations    []string
+	BinaryExportPath   string
 }
 
 // NewManager creates a new Manager object
@@ -252,6 +253,7 @@ func NewManager(modules ...AppModule) *Manager {
 		OrderExportGenesis: modulesStr,
 		OrderBeginBlockers: modulesStr,
 		OrderEndBlockers:   modulesStr,
+		BinaryExportPath:   "",
 	}
 }
 
@@ -535,6 +537,11 @@ func (m *Manager) ModuleNames() []string {
 		i++
 	}
 	return ms
+}
+
+// SetBinaryExportPath sets the genesis binaries export path.
+func (m *Manager) SetBinaryExportPath(path string) {
+	m.BinaryExportPath = path
 }
 
 // DefaultMigrationsOrder returns a default migrations order: ascending alphabetical by module name,
