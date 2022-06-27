@@ -130,3 +130,16 @@ func (am AppModule) ExportGenesis(_ sdk.Context, cdc codec.JSONCodec) json.RawMe
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }
+
+// InitGenesisFrom performs a no-op.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo is always empty, as InitGenesis does nothing either.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	// gs := ExportGenesis(ctx, am.accountKeeper)
+	// return cdc.MustMarshalJSON(gs)
+	am.DefaultGenesis(cdc)
+	return nil
+}

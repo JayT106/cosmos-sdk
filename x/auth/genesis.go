@@ -40,3 +40,12 @@ func ExportGenesis(ctx sdk.Context, ak keeper.AccountKeeper) *types.GenesisState
 
 	return types.NewGenesisState(params, genAccounts)
 }
+
+func InitGenesisFrom(ctx sdk.Context, ak keeper.AccountKeeper, data types.GenesisState) error {
+	return nil
+}
+
+// ExportGenesisTo returns a GenesisState for a given context, keeper and export path
+func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, path string) error {
+	return nil
+}

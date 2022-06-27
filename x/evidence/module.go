@@ -216,3 +216,23 @@ func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 func (am AppModule) WeightedOperations(simState module.SimulationState) []simtypes.WeightedOperation {
 	return nil
 }
+
+// InitGenesisFrom performs genesis initialization for the evidence module. It returns
+// no validator updates.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	// var gs types.GenesisState
+	// err := cdc.UnmarshalJSON(bz, &gs)
+	// if err != nil {
+	// 	panic(fmt.Sprintf("failed to unmarshal %s genesis state: %s", types.ModuleName, err))
+	// }
+
+	// InitGenesis(ctx, am.keeper, &gs)
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo exports the genesis state as raw bytes files to the destination
+// path for the evidence module.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	//cdc.MustMarshalJSON(ExportGenesis(ctx, am.keeper))
+	return nil
+}

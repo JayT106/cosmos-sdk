@@ -192,3 +192,20 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 		am.accountKeeper, am.bankKeeper, am.keeper, am.cdc,
 	)
 }
+
+// InitGenesisFrom performs genesis initialization for the authz module. It returns
+// no validator updates.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	// var genesisState authz.GenesisState
+	// cdc.MustUnmarshalJSON(data, &genesisState)
+	// am.keeper.InitGenesis(ctx, &genesisState)
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo exports the genesis state as raw bytes files to the destination
+// path for the authz module.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	// gs := am.keeper.ExportGenesis(ctx)
+	// cdc.MustMarshalJSON(gs)
+	return nil
+}

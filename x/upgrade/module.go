@@ -134,3 +134,17 @@ func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	return []abci.ValidatorUpdate{}
 }
+
+// InitGenesisFrom is ignored, no sense in serializing future upgrades
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	// var genesisState types.GenesisState
+	// cdc.MustUnmarshalJSON(data, &genesisState)
+	// return InitGenesis(ctx, am.keeper, am.accountKeeper, am.bankKeeper, &genesisState)
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo is always empty, as InitGenesis does nothing either
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	//am.DefaultGenesis(cdc)
+	return nil
+}
