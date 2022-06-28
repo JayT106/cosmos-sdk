@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"os"
+	"path"
 	"path/filepath"
 
 	serverconfig "github.com/cosmos/cosmos-sdk/server/config"
@@ -287,6 +288,21 @@ func (a appCreator) appExport(
 		return servertypes.ExportedApp{}, errors.New("application home not set")
 	}
 
+	exportBin, ok := appOpts.Get(flags.FlagExportGenesisToFiles).(bool)
+	var exportPath = ""
+	if ok && exportBin {
+		exportPath, ok := appOpts.Get(flags.FlagExportGenesisFilePath).(string)
+		if !ok || exportPath == "" {
+			b, err := os.Executable()
+			if err != nil {
+				return servertypes.ExportedApp{}, errors.New("application path not found")
+			}
+			exportPath = filepath.Dir(b)
+		}
+
+		exportPath = path.Join(exportPath, "genesis")
+	}
+
 	if height != -1 {
 		simApp = simapp.NewSimApp(logger, db, traceStore, false, map[int64]bool{}, homePath, uint(1), a.encCfg, appOpts)
 
@@ -297,5 +313,5 @@ func (a appCreator) appExport(
 		simApp = simapp.NewSimApp(logger, db, traceStore, true, map[int64]bool{}, homePath, uint(1), a.encCfg, appOpts)
 	}
 
-	return simApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, "")
+	return simApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, exportPath)
 }
