@@ -1,9 +1,16 @@
 package auth
 
 import (
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"os"
+	"path"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"google.golang.org/protobuf/proto"
 )
 
 // InitGenesis - Init store state from genesis data
@@ -46,6 +53,102 @@ func InitGenesisFrom(ctx sdk.Context, ak keeper.AccountKeeper, data types.Genesi
 }
 
 // ExportGenesisTo returns a GenesisState for a given context, keeper and export path
-func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, path string) error {
+func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	var fileIndex = 0
+	fn := fmt.Sprintf("genesis%d", fileIndex)
+	f, err := os.Create(path.Join(exportPath, fn))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// write the params
+	param := ak.GetParams(ctx)
+	encodedParam, err := param.Marshal()
+	if err != nil {
+		return err
+	}
+
+	fs := 0
+	b := make([]byte, 4)
+	binary.LittleEndian.PutUint32(b, uint32(len(encodedParam)))
+	n, err := f.Write(b)
+	if err != nil {
+		return err
+	}
+	fs += n
+
+	n, err = f.Write(encodedParam)
+	if err != nil {
+		return err
+	}
+	fs += n
+
+	// write the account info into marshal proto message.
+	ctxDone := false
+	var e = error(nil)
+	ak.IterateAccounts(ctx, func(account types.AccountI) bool {
+		select {
+		case <-ctx.Context().Done():
+			ctxDone = true
+			return true
+		default:
+			msg := account.(proto.Message)
+			bz, err := proto.Marshal(msg)
+			if err != nil {
+				e = fmt.Errorf("genesus account marshal err: %s", err)
+				return true
+			}
+
+			b := make([]byte, 4)
+			binary.LittleEndian.PutUint32(b, uint32(len(bz)))
+			n, err = f.Write(b)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			n, err = f.Write(bz)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			// we limited the file size to 100M
+			if fs > 100000000 {
+				err := f.Close()
+				if err != nil {
+					e = err
+					return true
+				}
+
+				fileIndex++
+				f, err = os.Create(path.Join(exportPath, fn))
+				if err != nil {
+					e = err
+					return true
+				}
+
+				fs = 0
+			}
+
+			return false
+		}
+	})
+
+	if ctxDone {
+		return errors.New("genesus export terminated")
+	}
+
+	if e != nil {
+		return e
+	}
+
 	return nil
 }
