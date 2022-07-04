@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"math/rand"
+	"os"
+	"path"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -204,8 +206,27 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the authz module.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	// gs := am.keeper.ExportGenesis(ctx)
-	// cdc.MustMarshalJSON(gs)
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	f, err := os.Create(path.Join(exportPath, "genesis0"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := am.keeper.ExportGenesis(ctx)
+	bz, err := gs.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(bz)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
