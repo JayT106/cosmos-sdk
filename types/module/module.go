@@ -31,6 +31,7 @@ package module
 import (
 	"encoding/json"
 	"fmt"
+	"path"
 	"sort"
 
 	"github.com/gorilla/mux"
@@ -340,13 +341,24 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 }
 
 // ExportGenesis performs export genesis functionality for modules
-func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) map[string]json.RawMessage {
+func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) (map[string]json.RawMessage, error) {
 	genesisData := make(map[string]json.RawMessage)
-	for _, moduleName := range m.OrderExportGenesis {
-		genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
+
+	if len(m.BinaryExportPath) > 0 {
+		for _, moduleName := range m.OrderExportGenesis {
+			modulePath := path.Join(m.BinaryExportPath, moduleName)
+			err := m.Modules[moduleName].ExportGenesisTo(ctx, cdc, modulePath)
+			if err != nil {
+				return nil, fmt.Errorf("ExportGenesis error, module=%s err=%s", moduleName, err.Error())
+			}
+		}
+	} else {
+		for _, moduleName := range m.OrderExportGenesis {
+			genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
+		}
 	}
 
-	return genesisData
+	return genesisData, nil
 }
 
 // assertNoForgottenModules checks that we didn't forget any modules in the
