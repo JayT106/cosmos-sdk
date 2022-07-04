@@ -60,7 +60,8 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 
 	var fileIndex = 0
 	fn := fmt.Sprintf("genesis%d", fileIndex)
-	f, err := os.Create(path.Join(exportPath, fn))
+	filePath := path.Join(exportPath, fn)
+	f, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
@@ -74,6 +75,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 	}
 
 	fs := 0
+	offset := 0
 	b := make([]byte, 4)
 	binary.LittleEndian.PutUint32(b, uint32(len(encodedParam)))
 	n, err := f.Write(b)
@@ -87,17 +89,31 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 		return err
 	}
 	fs += n
+	offset = fs
+	counts := 0
+	// leaving space for writing toal account numbers
+	b = make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, 0)
+	n, err = f.Write(b)
+	if err != nil {
+		return err
+	}
 
 	// write the account info into marshal proto message.
 	ctxDone := false
 	var e = error(nil)
+
 	ak.IterateAccounts(ctx, func(account types.AccountI) bool {
 		select {
 		case <-ctx.Context().Done():
 			ctxDone = true
 			return true
 		default:
-			msg := account.(proto.Message)
+			msg, ok := account.(proto.Message)
+			if !ok {
+				e = fmt.Errorf("can't protomarshal %T", account)
+				return true
+			}
 			bz, err := proto.Marshal(msg)
 			if err != nil {
 				e = fmt.Errorf("genesus account marshal err: %s", err)
@@ -129,7 +145,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 				}
 
 				fileIndex++
-				f, err = os.Create(path.Join(exportPath, fn))
+				f, err = os.Create(filePath)
 				if err != nil {
 					e = err
 					return true
@@ -138,6 +154,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 				fs = 0
 			}
 
+			counts++
 			return false
 		}
 	})
@@ -148,6 +165,26 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 
 	if e != nil {
 		return e
+	}
+
+	// close the current file and reopen the first file and update
+	// the account numbers in the file
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	fileIndex = 0
+	f, err = os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+
+	b = make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(counts))
+	_, err = f.WriteAt(b, int64(offset))
+	if err != nil {
+		return err
 	}
 
 	return nil
