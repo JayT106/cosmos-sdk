@@ -2,6 +2,8 @@ package vesting
 
 import (
 	"encoding/json"
+	"os"
+	"path"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -137,9 +139,21 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 }
 
 // ExportGenesisTo is always empty, as InitGenesis does nothing either.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	// gs := ExportGenesis(ctx, am.accountKeeper)
-	// return cdc.MustMarshalJSON(gs)
-	am.DefaultGenesis(cdc)
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	f, err := os.Create(path.Join(exportPath, "genesis0"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	_, err = f.Write(am.DefaultGenesis(cdc))
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
