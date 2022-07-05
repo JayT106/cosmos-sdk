@@ -159,10 +159,7 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 	return []abci.ValidatorUpdate{}, nil
 }
 
-// ExportGenesisTo exports the genesis state as raw bytes files to the destination
-// path for the param module.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	// gs := ExportGenesis(ctx, am.keeper)
-	// return cdc.MustMarshalJSON(gs)
+// ExportGenesisTo performs a no-op.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
 	return nil
 }
