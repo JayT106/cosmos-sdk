@@ -210,7 +210,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the bank module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	// gs := am.keeper.ExportGenesis(ctx)
-	// cdc.MustMarshalJSON(gs)
-	return nil
+	return am.keeper.ExportGenesisTo(ctx, path)
 }

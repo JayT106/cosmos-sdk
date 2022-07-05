@@ -23,6 +23,7 @@ type Keeper interface {
 
 	InitGenesis(sdk.Context, *types.GenesisState)
 	ExportGenesis(sdk.Context) *types.GenesisState
+	ExportGenesisTo(sdk.Context, string) error
 
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 	HasSupply(ctx sdk.Context, denom string) bool
