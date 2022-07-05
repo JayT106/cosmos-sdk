@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"os"
+	"path"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -194,8 +196,28 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the bank module.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	// gs := am.keeper.ExportGenesis(ctx)
-	// cdc.MustMarshalJSON(gs)
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	filePath := path.Join(exportPath, "genesis0")
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	genState := ExportGenesis(ctx, am.keeper)
+	bz, err := genState.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(bz)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
