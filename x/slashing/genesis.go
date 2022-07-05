@@ -1,6 +1,12 @@
 package slashing
 
 import (
+	"encoding/binary"
+	"errors"
+	"fmt"
+	"os"
+	"path"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	"github.com/cosmos/cosmos-sdk/x/slashing/types"
@@ -67,4 +73,171 @@ func ExportGenesis(ctx sdk.Context, keeper keeper.Keeper) (data *types.GenesisSt
 	})
 
 	return types.NewGenesisState(params, signingInfos, missedBlocks)
+}
+
+func ExportGenesisTo(ctx sdk.Context, keeper keeper.Keeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	var fileIndex = 0
+	fn := fmt.Sprintf("genesis%d", fileIndex)
+	filePath := path.Join(exportPath, fn)
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// write the params
+	param := keeper.GetParams(ctx)
+	encodedParam, err := param.Marshal()
+	if err != nil {
+		return err
+	}
+
+	fs := 0
+	offset := 0
+	b := make([]byte, 4)
+	binary.LittleEndian.PutUint32(b, uint32(len(encodedParam)))
+	n, err := f.Write(b)
+	if err != nil {
+		return err
+	}
+	fs += n
+
+	n, err = f.Write(encodedParam)
+	if err != nil {
+		return err
+	}
+	fs += n
+	offset = fs
+
+	counts := 0
+	// leaving space for writing total slashed account numbers
+	b = make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, 0)
+	n, err = f.Write(b)
+	if err != nil {
+		return err
+	}
+	fs += n
+
+	// write the slashing info into marshal proto message.
+	ctxDone := false
+	var e = error(nil)
+
+	keeper.IterateValidatorSigningInfos(ctx, func(address sdk.ConsAddress, info types.ValidatorSigningInfo) (stop bool) {
+		select {
+		case <-ctx.Context().Done():
+			ctxDone = true
+			return true
+		default:
+			bechAddr := address.String()
+
+			si := types.SigningInfo{
+				Address:              bechAddr,
+				ValidatorSigningInfo: info,
+			}
+			encoded, err := si.Marshal()
+			if err != nil {
+				e = fmt.Errorf("failed to marshal")
+				return true
+			}
+
+			b := make([]byte, 4)
+			binary.LittleEndian.PutUint32(b, uint32(len(encoded)))
+			n, err := f.Write(b)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			n, err = f.Write(encoded)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			localMissedBlocks := keeper.GetValidatorMissedBlocks(ctx, address)
+			mb := types.ValidatorMissedBlocks{
+				Address:      bechAddr,
+				MissedBlocks: localMissedBlocks,
+			}
+
+			encoded, err = mb.Marshal()
+			if err != nil {
+				e = fmt.Errorf("failed to marshal")
+				return true
+			}
+
+			binary.LittleEndian.PutUint32(b, uint32(len(encoded)))
+			n, err = f.Write(b)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			n, err = f.Write(encoded)
+			if err != nil {
+				e = err
+				return true
+			}
+			fs += n
+
+			// we limited the file size to 100M
+			if fs > 100000000 {
+				err := f.Close()
+				if err != nil {
+					e = err
+					return true
+				}
+
+				fileIndex++
+				f, err = os.Create(filePath)
+				if err != nil {
+					e = err
+					return true
+				}
+
+				fs = 0
+			}
+
+			counts++
+			return false
+		}
+	})
+
+	if ctxDone {
+		return errors.New("genesus export terminated")
+	}
+
+	if e != nil {
+		return e
+	}
+
+	// close the current file and reopen the first file and update
+	// the account numbers in the file
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	fileIndex = 0
+	f, err = os.OpenFile(filePath, os.O_RDWR, 0644)
+	if err != nil {
+		return err
+	}
+
+	b = make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(counts))
+	_, err = f.WriteAt(b, int64(offset))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
