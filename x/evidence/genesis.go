@@ -2,6 +2,8 @@ package evidence
 
 import (
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/gogo/protobuf/proto"
 
@@ -50,4 +52,29 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	return &types.GenesisState{
 		Evidence: evidence,
 	}
+}
+
+func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	filePath := path.Join(exportPath, "genesis0")
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := ExportGenesis(ctx, k)
+	bz, err := gs.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(bz)
+	if err != nil {
+		return err
+	}
+	return nil
 }
