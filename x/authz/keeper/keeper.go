@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"time"
 
 	"github.com/gogo/protobuf/proto"
@@ -245,4 +247,29 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *authz.GenesisState) {
 			panic(err)
 		}
 	}
+}
+
+func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	f, err := os.Create(path.Join(exportPath, "genesis0"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := k.ExportGenesis(ctx)
+	bz, err := gs.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(bz)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
