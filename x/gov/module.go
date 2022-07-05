@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"os"
-	"path"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -237,31 +235,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the gov module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
-	if err := os.MkdirAll(exportPath, 0755); err != nil {
-		return err
-	}
-
-	filePath := path.Join(exportPath, "genesis0")
-	f, err := os.Create(filePath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	gs := ExportGenesis(ctx, am.keeper)
-	if err != nil {
-		return err
-	}
-
-	bz, err := gs.Marshal()
-	if err != nil {
-		return err
-	}
-
-	_, err = f.Write(bz)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ExportGenesisTo(ctx, am.keeper, exportPath)
 }
