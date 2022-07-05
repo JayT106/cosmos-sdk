@@ -98,6 +98,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 	if err != nil {
 		return err
 	}
+	fs += n
 
 	// write the account info into marshal proto message.
 	ctxDone := false
