@@ -1,6 +1,9 @@
 package capability
 
 import (
+	"os"
+	"path"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/capability/keeper"
 	"github.com/cosmos/cosmos-sdk/x/capability/types"
@@ -43,4 +46,30 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 		Index:  index,
 		Owners: owners,
 	}
+}
+
+func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	filePath := path.Join(exportPath, "genesis0")
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	genState := ExportGenesis(ctx, k)
+	bz, err := genState.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(bz)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
