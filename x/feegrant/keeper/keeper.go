@@ -2,6 +2,8 @@ package keeper
 
 import (
 	"fmt"
+	"os"
+	"path"
 
 	"github.com/tendermint/tendermint/libs/log"
 
@@ -226,4 +228,34 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) (*feegrant.GenesisState, error) {
 	return &feegrant.GenesisState{
 		Allowances: grants,
 	}, err
+}
+
+func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	filePath := path.Join(exportPath, "genesis0")
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs, err := k.ExportGenesis(ctx)
+	if err != nil {
+		return err
+	}
+
+	bz, err := gs.Marshal()
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(bz)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
