@@ -143,8 +143,7 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 	return []abci.ValidatorUpdate{}, nil
 }
 
-// ExportGenesisTo is always empty, as InitGenesis does nothing either
+// ExportGenesisTo performs a no-op.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	//am.DefaultGenesis(cdc)
 	return nil
 }
