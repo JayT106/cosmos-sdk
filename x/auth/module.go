@@ -203,7 +203,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the auth module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	// gs := ExportGenesis(ctx, am.accountKeeper)
-	// return cdc.MustMarshalJSON(gs)
 	return ExportGenesisTo(ctx, am.accountKeeper, path)
 }
