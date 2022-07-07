@@ -36,6 +36,15 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			homeDir, _ := cmd.Flags().GetString(flags.FlagHome)
 			config.SetRoot(homeDir)
 
+			binaryExport, err := cmd.Flags().GetBool(flags.FlagExportGenesisToFiles)
+			if err != nil {
+				return err
+			}
+			binaryExportPath, err := cmd.Flags().GetString(flags.FlagExportGenesisFilePath)
+			if err != nil {
+				return err
+			}
+
 			if _, err := os.Stat(config.GenesisFile()); os.IsNotExist(err) {
 				return err
 			}
@@ -98,15 +107,22 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 				},
 			}
 
-			// NOTE: Tendermint uses a custom JSON decoder for GenesisDoc
-			// (except for stuff inside AppState). Inside AppState, we're free
-			// to encode as protobuf or amino.
-			encoded, err := tmjson.Marshal(doc)
-			if err != nil {
-				return err
+			if binaryExport {
+				if err := doc.SaveAs(path.Join(binaryExportPath, "genesis.bin")); err != nil {
+					return err
+				}
+			} else {
+				// NOTE: Tendermint uses a custom JSON decoder for GenesisDoc
+				// (except for stuff inside AppState). Inside AppState, we're free
+				// to encode as protobuf or amino.
+				encoded, err := tmjson.Marshal(doc)
+				if err != nil {
+					return err
+				}
+
+				cmd.Println(string(sdk.MustSortJSON(encoded)))
 			}
 
-			cmd.Println(string(sdk.MustSortJSON(encoded)))
 			return nil
 		},
 	}
