@@ -110,7 +110,8 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 			ctxDone = true
 			return true
 		default:
-			msg, ok := account.(proto.Message)
+			genAccount := account.(types.GenesisAccount)
+			msg, ok := genAccount.(proto.Message)
 			if !ok {
 				e = fmt.Errorf("can't protomarshal %T", account)
 				return true
