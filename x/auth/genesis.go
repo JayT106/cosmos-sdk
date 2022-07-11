@@ -54,7 +54,7 @@ func InitGenesisFrom(ctx sdk.Context, ak keeper.AccountKeeper, data types.Genesi
 
 // ExportGenesisTo returns a GenesisState for a given context, keeper and export path
 func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string) error {
-	if err := os.MkdirAll(exportPath, 0644); err != nil {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
 

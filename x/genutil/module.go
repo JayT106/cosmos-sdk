@@ -130,7 +130,7 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the genutil module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
-	if err := os.MkdirAll(exportPath, 0644); err != nil {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
 
