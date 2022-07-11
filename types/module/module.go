@@ -347,6 +347,7 @@ func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) (map[strin
 	if len(m.BinaryExportPath) > 0 {
 		for _, moduleName := range m.OrderExportGenesis {
 			modulePath := path.Join(m.BinaryExportPath, moduleName)
+			fmt.Printf("Export... module: %s,path: %s\n", moduleName, modulePath)
 			err := m.Modules[moduleName].ExportGenesisTo(ctx, cdc, modulePath)
 			if err != nil {
 				return nil, fmt.Errorf("ExportGenesis error, module=%s err=%s", moduleName, err.Error())

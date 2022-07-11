@@ -250,7 +250,7 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *authz.GenesisState) {
 }
 
 func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
-	if err := os.MkdirAll(exportPath, 0755); err != nil {
+	if err := os.MkdirAll(exportPath, 0644); err != nil {
 		return err
 	}
 

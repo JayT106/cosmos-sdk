@@ -55,7 +55,7 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 }
 
 func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
-	if err := os.MkdirAll(exportPath, 0755); err != nil {
+	if err := os.MkdirAll(exportPath, 0644); err != nil {
 		return err
 	}
 
