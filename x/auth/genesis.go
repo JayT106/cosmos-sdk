@@ -10,7 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
-	"google.golang.org/protobuf/proto"
+	proto "github.com/gogo/protobuf/proto"
 )
 
 // InitGenesis - Init store state from genesis data
@@ -110,9 +110,10 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 			ctxDone = true
 			return true
 		default:
-			msg, ok := account.(proto.Message)
+			genAccount := account.(types.GenesisAccount)
+			msg, ok := genAccount.(proto.Message)
 			if !ok {
-				e = fmt.Errorf("can't protomarshal %T", account)
+				e = fmt.Errorf("can't protomarshal %T", msg)
 				return true
 			}
 			bz, err := proto.Marshal(msg)
