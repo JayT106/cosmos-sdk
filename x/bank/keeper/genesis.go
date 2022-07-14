@@ -56,15 +56,18 @@ func (k BaseKeeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	)
 }
 
+func filePath(exportPath string, fileIndex int) string {
+	fn := fmt.Sprintf("%s%d", types.ModuleName, fileIndex)
+	return path.Join(exportPath, fn)
+}
+
 func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
 
 	var fileIndex = 0
-	fn := fmt.Sprintf("%s%d", types.ModuleName, fileIndex)
-	filePath := path.Join(exportPath, fn)
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
@@ -138,7 +141,7 @@ func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					return err
 				}
@@ -193,7 +196,7 @@ func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					return err
 				}
@@ -243,7 +246,7 @@ func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					return err
 				}

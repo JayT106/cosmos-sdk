@@ -52,6 +52,11 @@ func InitGenesisFrom(ctx sdk.Context, ak keeper.AccountKeeper, data types.Genesi
 	return nil
 }
 
+func filePath(exportPath string, fileIndex int) string {
+	fn := fmt.Sprintf("%s%d", types.ModuleName, fileIndex)
+	return path.Join(exportPath, fn)
+}
+
 // ExportGenesisTo returns a GenesisState for a given context, keeper and export path
 func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
@@ -59,9 +64,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 	}
 
 	var fileIndex = 0
-	fn := fmt.Sprintf("%s%d", types.ModuleName, fileIndex)
-	filePath := path.Join(exportPath, fn)
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
@@ -147,7 +150,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					e = err
 					return true
@@ -177,7 +180,7 @@ func ExportGenesisTo(ctx sdk.Context, ak keeper.AccountKeeper, exportPath string
 	}
 
 	fileIndex = 0
-	f, err = os.OpenFile(filePath, os.O_RDWR, 0666)
+	f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}
