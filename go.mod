@@ -59,6 +59,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/cosmos/gorocksdb v1.2.0 // indirect
 	github.com/cosmos/ledger-go v0.9.2 // indirect
 	github.com/danieljoos/wincred v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -126,6 +127,7 @@ replace (
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
+	github.com/tendermint/tm-db => github.com/jayt106/tm-db v0.6.8-0.20220714151545-a51b347ddefe
 
 	// latest grpc doesn't work with with our modified proto compiler, so we need to enforce
 	// the following version across all dependencies.
