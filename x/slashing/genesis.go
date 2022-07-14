@@ -81,9 +81,9 @@ func ExportGenesisTo(ctx sdk.Context, keeper keeper.Keeper, exportPath string) e
 	}
 
 	var fileIndex = 0
-	fn := fmt.Sprintf("genesis%d", fileIndex)
+	fn := fmt.Sprintf("%s%d", types.ModuleName, fileIndex)
 	filePath := path.Join(exportPath, fn)
-	f, err := os.Create(filePath)
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
@@ -197,7 +197,7 @@ func ExportGenesisTo(ctx sdk.Context, keeper keeper.Keeper, exportPath string) e
 				}
 
 				fileIndex++
-				f, err = os.Create(filePath)
+				f, err = os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					e = err
 					return true
@@ -227,7 +227,7 @@ func ExportGenesisTo(ctx sdk.Context, keeper keeper.Keeper, exportPath string) e
 	}
 
 	fileIndex = 0
-	f, err = os.OpenFile(filePath, os.O_RDWR, 0644)
+	f, err = os.OpenFile(filePath, os.O_RDWR, 0666)
 	if err != nil {
 		return err
 	}

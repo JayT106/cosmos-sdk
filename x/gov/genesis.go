@@ -89,8 +89,8 @@ func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error 
 		return err
 	}
 
-	filePath := path.Join(exportPath, "genesis0")
-	f, err := os.Create(filePath)
+	filePath := path.Join(exportPath, fmt.Sprintf("%s%d", types.ModuleName, 0))
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}

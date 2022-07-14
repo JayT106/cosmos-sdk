@@ -254,7 +254,8 @@ func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 		return err
 	}
 
-	f, err := os.Create(path.Join(exportPath, "genesis0"))
+	filePath := path.Join(exportPath, fmt.Sprintf("%s%d", authz.ModuleName, 0))
+	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		return err
 	}
