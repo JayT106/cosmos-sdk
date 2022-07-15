@@ -108,7 +108,7 @@ func ExportCmd(appExporter types.AppExporter, defaultNodeHome string) *cobra.Com
 			}
 
 			if binaryExport {
-				if err := doc.SaveAs(path.Join(binaryExportPath, "genesis.bin")); err != nil {
+				if err := doc.SaveAs(path.Join(binaryExportPath, "genesis", "genesis.json")); err != nil {
 					return err
 				}
 			} else {
