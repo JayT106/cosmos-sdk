@@ -30,13 +30,23 @@ func (app *SimApp) ExportAppStateAndValidators(
 	}
 
 	app.mm.SetBinaryExportPath(exportPath)
+
 	genState, err := app.mm.ExportGenesis(ctx, app.appCodec)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
-	appState, err := json.MarshalIndent(genState, "", "  ")
-	if err != nil {
-		return servertypes.ExportedApp{}, err
+
+	var appState []byte
+	if exportPath != "" {
+		appState, err = json.MarshalIndent("load_from_folder", "", "  ")
+		if err != nil {
+			return servertypes.ExportedApp{}, err
+		}
+	} else {
+		appState, err = json.MarshalIndent(genState, "", "  ")
+		if err != nil {
+			return servertypes.ExportedApp{}, err
+		}
 	}
 
 	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
