@@ -141,7 +141,7 @@ func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					return err
 				}
@@ -196,7 +196,7 @@ func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					return err
 				}
@@ -246,7 +246,7 @@ func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 				}
 
 				fileIndex++
-				f, err = os.OpenFile(path.Join(exportPath, filePath(exportPath, fileIndex)), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+				f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 				if err != nil {
 					return err
 				}
