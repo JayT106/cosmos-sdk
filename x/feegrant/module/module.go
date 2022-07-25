@@ -215,18 +215,15 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // InitGenesisFrom performs genesis initialization for the feegrant module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// var gs feegrant.GenesisState
-	// cdc.MustUnmarshalJSON(bz, &gs)
+	if err := am.keeper.InitGenesisFrom(ctx, path); err != nil {
+		return nil, err
+	}
 
-	// err := am.keeper.InitGenesis(ctx, &gs)
-	// if err != nil {
-	// 	panic(err)
-	// }
 	return []abci.ValidatorUpdate{}, nil
 }
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the feegrant module.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
-	return am.keeper.ExportGenesisTo(ctx, exportPath)
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return am.keeper.ExportGenesisTo(ctx, path)
 }

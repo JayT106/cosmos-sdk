@@ -235,7 +235,7 @@ type Manager struct {
 	OrderBeginBlockers []string
 	OrderEndBlockers   []string
 	OrderMigrations    []string
-	BinaryExportPath   string
+	GenesisPath        string
 }
 
 // NewManager creates a new Manager object
@@ -254,7 +254,7 @@ func NewManager(modules ...AppModule) *Manager {
 		OrderExportGenesis: modulesStr,
 		OrderBeginBlockers: modulesStr,
 		OrderEndBlockers:   modulesStr,
-		BinaryExportPath:   "",
+		GenesisPath:        "",
 	}
 }
 
@@ -323,7 +323,16 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 			continue
 		}
 
-		moduleValUpdates := m.Modules[moduleName].InitGenesis(ctx, cdc, genesisData[moduleName])
+		var moduleValUpdates []abci.ValidatorUpdate
+		if m.GenesisPath != "" {
+			update, err := m.Modules[moduleName].InitGenesisFrom(ctx, cdc, m.GenesisPath)
+			if err != nil {
+				panic(fmt.Sprintf("InitGenesis error: %v", err))
+			}
+			moduleValUpdates = update
+		} else {
+			moduleValUpdates = m.Modules[moduleName].InitGenesis(ctx, cdc, genesisData[moduleName])
+		}
 
 		// use these validator updates if provided, the module manager assumes
 		// only one module will update the validator set
@@ -344,9 +353,9 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) (map[string]json.RawMessage, error) {
 	genesisData := make(map[string]json.RawMessage)
 
-	if len(m.BinaryExportPath) > 0 {
+	if len(m.GenesisPath) > 0 {
 		for _, moduleName := range m.OrderExportGenesis {
-			modulePath := path.Join(m.BinaryExportPath, moduleName)
+			modulePath := path.Join(m.GenesisPath, moduleName)
 			fmt.Printf("Export... module: %s,path: %s\n", moduleName, modulePath)
 			err := m.Modules[moduleName].ExportGenesisTo(ctx, cdc, modulePath)
 			if err != nil {
@@ -552,9 +561,9 @@ func (m *Manager) ModuleNames() []string {
 	return ms
 }
 
-// SetBinaryExportPath sets the genesis binaries export path.
-func (m *Manager) SetBinaryExportPath(path string) {
-	m.BinaryExportPath = path
+// SetGenesisPath sets the genesis binaries export/import path.
+func (m *Manager) SetGenesisPath(path string) {
+	m.GenesisPath = path
 }
 
 // DefaultMigrationsOrder returns a default migrations order: ascending alphabetical by module name,

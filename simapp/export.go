@@ -29,7 +29,7 @@ func (app *SimApp) ExportAppStateAndValidators(
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	app.mm.SetBinaryExportPath(exportPath)
+	app.mm.SetGenesisPath(exportPath)
 
 	genState, err := app.mm.ExportGenesis(ctx, app.appCodec)
 	if err != nil {

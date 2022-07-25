@@ -49,26 +49,54 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 	}
 }
 
-func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
-	if err := os.MkdirAll(exportPath, 0755); err != nil {
-		return err
-	}
-
-	filePath := path.Join(exportPath, fmt.Sprintf("%s%d", types.ModuleName, 0))
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+// InitGenesisFrom initializes the capability module's state from a provided genesis
+// state.
+func InitGenesisFrom(ctx sdk.Context, k keeper.Keeper, importPath string) error {
+	fp := path.Join(importPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
+	f, err := os.OpenFile(fp, os.O_RDONLY, 0666)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	genState := ExportGenesis(ctx, k)
-	bz, err := genState.Marshal()
+	fi, err := f.Stat()
 	if err != nil {
 		return err
 	}
 
-	_, err = f.Write(bz)
+	bz := make([]byte, fi.Size())
+	if _, err := f.Read(bz); err != nil {
+		return err
+	}
+
+	var gs types.GenesisState
+	if err := gs.Unmarshal(bz); err != nil {
+		return err
+	}
+
+	InitGenesis(ctx, k, gs)
+	return nil
+}
+
+func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
+	if err := os.MkdirAll(exportPath, 0755); err != nil {
+		return err
+	}
+
+	fp := path.Join(exportPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
+	f, err := os.Create(fp)
 	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := ExportGenesis(ctx, k)
+	bz, err := gs.Marshal()
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
+	}
+
+	if _, err := f.Write(bz); err != nil {
 		return err
 	}
 

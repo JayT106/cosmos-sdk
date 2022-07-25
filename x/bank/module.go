@@ -198,12 +198,10 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // InitGenesisFrom performs genesis initialization for the bank module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// start := time.Now()
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-	// telemetry.MeasureSince(start, "InitGenesis", "crisis", "unmarshal")
+	if err := am.keeper.InitGenesisFrom(ctx, path); err != nil {
+		return nil, err
+	}
 
-	// am.keeper.InitGenesis(ctx, &genesisState)
 	return []abci.ValidatorUpdate{}, nil
 }
 

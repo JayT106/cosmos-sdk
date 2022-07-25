@@ -172,21 +172,16 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 // InitGenesisFrom performs genesis initialization for the crisis module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// start := time.Now()
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-	// telemetry.MeasureSince(start, "InitGenesis", "crisis", "unmarshal")
+	am.keeper.InitGenesisFrom(ctx, path)
+	if !am.skipGenesisInvariants {
+		am.keeper.AssertInvariants(ctx)
+	}
 
-	// am.keeper.InitGenesis(ctx, &genesisState)
-	// if !am.skipGenesisInvariants {
-	// 	am.keeper.AssertInvariants(ctx)
-	// }
-	// return []abci.ValidatorUpdate{}
 	return []abci.ValidatorUpdate{}, nil
 }
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the crisis module.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
-	return am.keeper.ExportGenesisTo(ctx, exportPath)
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return am.keeper.ExportGenesisTo(ctx, path)
 }

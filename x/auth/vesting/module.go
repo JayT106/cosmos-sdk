@@ -137,6 +137,6 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 }
 
 // ExportGenesisTo performs a no-op.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
 	return nil
 }

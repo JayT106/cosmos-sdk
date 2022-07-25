@@ -208,14 +208,15 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // InitGenesisFrom performs genesis initialization for the distribution module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-	// am.keeper.InitGenesis(ctx, genesisState)
+	if err := am.keeper.InitGenesisFrom(ctx, path); err != nil {
+		return nil, err
+	}
+
 	return []abci.ValidatorUpdate{}, nil
 }
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the distribution module.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
-	return am.keeper.ExportGenesisTo(ctx, exportPath)
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return am.keeper.ExportGenesisTo(ctx, path)
 }

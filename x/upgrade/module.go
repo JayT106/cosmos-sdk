@@ -137,9 +137,6 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 
 // InitGenesisFrom is ignored, no sense in serializing future upgrades
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-	// return InitGenesis(ctx, am.keeper, am.accountKeeper, am.bankKeeper, &genesisState)
 	return []abci.ValidatorUpdate{}, nil
 }
 

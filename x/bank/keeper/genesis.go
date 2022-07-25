@@ -1,7 +1,6 @@
 package keeper
 
 import (
-	"encoding/binary"
 	"fmt"
 	"os"
 	"path"
@@ -56,204 +55,54 @@ func (k BaseKeeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	)
 }
 
-func filePath(exportPath string, fileIndex int) string {
-	fn := fmt.Sprintf("%s%d", types.ModuleName, fileIndex)
-	return path.Join(exportPath, fn)
-}
-
 func (k BaseKeeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
 
-	var fileIndex = 0
-	f, err := os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	fp := path.Join(exportPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
+	f, err := os.Create(fp)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	// write the params
-	param := k.GetParams(ctx)
-	encodedParam, err := param.Marshal()
+	gs := k.ExportGenesis(ctx)
+	bz, err := gs.Marshal()
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
+	}
+
+	if _, err := f.Write(bz); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (k BaseKeeper) InitGenesisFrom(ctx sdk.Context, importPath string) error {
+	fp := path.Join(importPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
+	f, err := os.OpenFile(fp, os.O_RDONLY, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
 	if err != nil {
 		return err
 	}
 
-	fs := 0
-	b := make([]byte, 4)
-	binary.LittleEndian.PutUint32(b, uint32(len(encodedParam)))
-	n, err := f.Write(b)
-	if err != nil {
+	bz := make([]byte, fi.Size())
+	if _, err := f.Read(bz); err != nil {
 		return err
 	}
-	fs += n
 
-	n, err = f.Write(encodedParam)
-	if err != nil {
+	var gs *types.GenesisState
+	if err := gs.Unmarshal(bz); err != nil {
 		return err
 	}
-	fs += n
 
-	balances := k.GetAccountsBalances(ctx)
-	if balances == nil {
-		return fmt.Errorf("genesis export context is closed")
-	}
-
-	// write the total account numbers
-	b = make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(len(balances)))
-	n, err = f.Write(b)
-	if err != nil {
-		return err
-	}
-	fs += n
-
-	// write the account balances
-	for _, balance := range balances {
-		select {
-		case <-ctx.Context().Done():
-			return fmt.Errorf("genesis export context is closed")
-		default:
-			bz, err := balance.Marshal()
-			if err != nil {
-				return err
-			}
-
-			b := make([]byte, 4)
-			binary.LittleEndian.PutUint32(b, uint32(len(bz)))
-			n, err := f.Write(b)
-			if err != nil {
-				return err
-			}
-			fs += n
-
-			n, err = f.Write(bz)
-			if err != nil {
-				return err
-			}
-			fs += n
-
-			if fs > 100000000 {
-				err := f.Close()
-				if err != nil {
-					return err
-				}
-
-				fileIndex++
-				f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-				if err != nil {
-					return err
-				}
-				fs = 0
-			}
-		}
-	}
-
-	coinsSupply, _, err := k.GetPaginatedTotalSupply(ctx, &query.PageRequest{Limit: query.MaxLimit})
-	if err != nil {
-		return fmt.Errorf("unable to fetch total supply %v", err)
-	}
-
-	// write the total coin numbers
-	b = make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(len(coinsSupply)))
-	n, err = f.Write(b)
-	if err != nil {
-		return err
-	}
-	fs += n
-
-	// write the coin supply
-	for _, coinSupply := range coinsSupply {
-		select {
-		case <-ctx.Context().Done():
-			return fmt.Errorf("genesis export context is closed")
-		default:
-			bz, err := coinSupply.Marshal()
-			if err != nil {
-				return err
-			}
-
-			b := make([]byte, 4)
-			binary.LittleEndian.PutUint32(b, uint32(len(bz)))
-			n, err := f.Write(b)
-			if err != nil {
-				return err
-			}
-			fs += n
-
-			n, err = f.Write(bz)
-			if err != nil {
-				return err
-			}
-			fs += n
-
-			if fs > 100000000 {
-				err := f.Close()
-				if err != nil {
-					return err
-				}
-
-				fileIndex++
-				f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-				if err != nil {
-					return err
-				}
-				fs = 0
-			}
-		}
-	}
-
-	// write the denominations metadata numbers
-	mds := k.GetAllDenomMetaData(ctx)
-	b = make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(len(mds)))
-	n, err = f.Write(b)
-	if err != nil {
-		return err
-	}
-	fs += n
-
-	for _, md := range mds {
-		select {
-		case <-ctx.Context().Done():
-			return fmt.Errorf("genesis export context is closed")
-		default:
-			bz, err := md.Marshal()
-			if err != nil {
-				return err
-			}
-
-			b := make([]byte, 4)
-			binary.LittleEndian.PutUint32(b, uint32(len(bz)))
-			n, err := f.Write(b)
-			if err != nil {
-				return err
-			}
-			fs += n
-
-			n, err = f.Write(bz)
-			if err != nil {
-				return err
-			}
-			fs += n
-
-			if fs > 100000000 {
-				err := f.Close()
-				if err != nil {
-					return err
-				}
-
-				fileIndex++
-				f, err = os.OpenFile(filePath(exportPath, fileIndex), os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-				if err != nil {
-					return err
-				}
-				fs = 0
-			}
-		}
-	}
-
+	k.InitGenesis(ctx, gs)
 	return nil
 }

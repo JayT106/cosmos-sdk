@@ -116,15 +116,35 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 
 // InitGenesisFrom performs genesis initialization for the genutil module. It returns
 // no validator updates.
-func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-	// validators, err := InitGenesis(ctx, am.stakingKeeper, am.deliverTx, genesisState, am.txEncodingConfig)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// return validators
-	return []abci.ValidatorUpdate{}, nil
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, importPath string) ([]abci.ValidatorUpdate, error) {
+	fp := path.Join(importPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
+	f, err := os.OpenFile(fp, os.O_RDONLY, 0666)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	bz := make([]byte, fi.Size())
+	if _, err := f.Read(bz); err != nil {
+		return nil, err
+	}
+
+	var gs *types.GenesisState
+	if err := gs.Unmarshal(bz); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
+	}
+
+	validators, err := InitGenesis(ctx, am.stakingKeeper, am.deliverTx, *gs, am.txEncodingConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	return validators, nil
 }
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
@@ -134,15 +154,14 @@ func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, export
 		return err
 	}
 
-	filePath := path.Join(exportPath, fmt.Sprintf("%s%d", types.ModuleName, 0))
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	fp := path.Join(exportPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
+	f, err := os.Create(fp)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	_, err = f.Write(am.DefaultGenesis(cdc))
-	if err != nil {
+	if _, err = f.Write(am.DefaultGenesis(cdc)); err != nil {
 		return err
 	}
 

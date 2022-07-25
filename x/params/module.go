@@ -148,18 +148,12 @@ func (AppModule) EndBlock(_ sdk.Context, _ abci.RequestEndBlock) []abci.Validato
 	return []abci.ValidatorUpdate{}
 }
 
-// InitGenesisFrom performs genesis initialization for the param module. It returns
-// no validator updates.
+// InitGenesisFrom performs a no-op.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	// var genesisState types.GenesisState
-	// cdc.MustUnmarshalJSON(data, &genesisState)
-
-	// InitGenesis(ctx, am.keeper, am.authKeeper, &genesisState)
-	// return []abci.ValidatorUpdate{}
 	return []abci.ValidatorUpdate{}, nil
 }
 
 // ExportGenesisTo performs a no-op.
-func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
 	return nil
 }

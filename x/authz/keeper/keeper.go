@@ -249,13 +249,41 @@ func (k Keeper) InitGenesis(ctx sdk.Context, data *authz.GenesisState) {
 	}
 }
 
+func (k Keeper) InitGenesisFrom(ctx sdk.Context, importPath string) error {
+	fp := path.Join(importPath, fmt.Sprintf("genesis_%s.bin", authz.ModuleName))
+	f, err := os.OpenFile(fp, os.O_RDONLY, 0666)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	fi, err := f.Stat()
+	if err != nil {
+		return err
+	}
+
+	bz := make([]byte, fi.Size())
+	if _, err := f.Read(bz); err != nil {
+		return err
+	}
+
+	var gs *authz.GenesisState
+	if err := gs.Unmarshal(bz); err != nil {
+		return err
+	}
+
+	k.InitGenesis(ctx, gs)
+
+	return nil
+}
+
 func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
 
-	filePath := path.Join(exportPath, fmt.Sprintf("%s%d", authz.ModuleName, 0))
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	fp := path.Join(exportPath, fmt.Sprintf("genesis_%s.bin", authz.ModuleName))
+	f, err := os.Create(fp)
 	if err != nil {
 		return err
 	}
@@ -264,11 +292,10 @@ func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 	gs := k.ExportGenesis(ctx)
 	bz, err := gs.Marshal()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to unmarshal %s genesis state: %s", authz.ModuleName, err)
 	}
 
-	_, err = f.Write(bz)
-	if err != nil {
+	if _, err = f.Write(bz); err != nil {
 		return err
 	}
 
