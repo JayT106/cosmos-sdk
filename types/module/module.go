@@ -318,13 +318,15 @@ func (m *Manager) RegisterServices(cfg Configurator) {
 // InitGenesis performs init genesis functionality for modules
 func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData map[string]json.RawMessage) abci.ResponseInitChain {
 	var validatorUpdates []abci.ValidatorUpdate
+	initWithPath := (len(m.GenesisPath) != 0)
 	for _, moduleName := range m.OrderInitGenesis {
-		if genesisData[moduleName] == nil {
+		if (!initWithPath && genesisData[moduleName] == nil) ||
+			(initWithPath && m.Modules[moduleName] == nil) {
 			continue
 		}
 
 		var moduleValUpdates []abci.ValidatorUpdate
-		if m.GenesisPath != "" {
+		if initWithPath {
 			update, err := m.Modules[moduleName].InitGenesisFrom(ctx, cdc, m.GenesisPath)
 			if err != nil {
 				panic(fmt.Sprintf("InitGenesis error: %v", err))
