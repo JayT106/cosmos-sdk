@@ -436,7 +436,9 @@ func (app *SimApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 
 // InitChainer application update at chain initialization
 func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
-	loadAppStateFromFolder, _ := json.MarshalIndent("load_from_folder", "", "  ")
+	var jsonObj = make(map[string]interface{})
+	jsonObj["binary_genesis_state"] = "true"
+	loadAppStateFromFolder, _ := json.MarshalIndent(jsonObj, "", "  ")
 	var genesisState GenesisState
 	if bytes.Equal(loadAppStateFromFolder, req.AppStateBytes) {
 		app.mm.SetGenesisPath(path.Join(app.homepath, "config", "genesis"))

@@ -38,7 +38,9 @@ func (app *SimApp) ExportAppStateAndValidators(
 
 	var appState []byte
 	if exportPath != "" {
-		appState, err = json.MarshalIndent("load_from_folder", "", "  ")
+		var jsonObj map[string]interface{}
+		jsonObj["binary_genesis_state"] = "true"
+		appState, err = json.MarshalIndent(jsonObj, "", "  ")
 		if err != nil {
 			return servertypes.ExportedApp{}, err
 		}
