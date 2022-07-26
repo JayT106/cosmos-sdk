@@ -327,7 +327,8 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 
 		var moduleValUpdates []abci.ValidatorUpdate
 		if initWithPath {
-			update, err := m.Modules[moduleName].InitGenesisFrom(ctx, cdc, m.GenesisPath)
+			modulePath := path.Join(m.GenesisPath, moduleName)
+			update, err := m.Modules[moduleName].InitGenesisFrom(ctx, cdc, modulePath)
 			if err != nil {
 				panic(fmt.Sprintf("InitGenesis error: %v", err))
 			}
