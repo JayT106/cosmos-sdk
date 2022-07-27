@@ -91,12 +91,12 @@ func InitGenesisFrom(ctx sdk.Context, k keeper.Keeper, sk types.StakingKeeper, i
 		return err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
 	}
 
-	InitGenesis(ctx, k, sk, gs)
+	InitGenesis(ctx, k, sk, &gs)
 	return nil
 }
 

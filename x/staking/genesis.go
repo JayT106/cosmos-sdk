@@ -289,12 +289,12 @@ func InitGenesisFrom(
 		return nil, err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
 	}
 
-	return InitGenesis(ctx, k, ak, bk, gs), nil
+	return InitGenesis(ctx, k, ak, bk, &gs), nil
 }
 
 func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {

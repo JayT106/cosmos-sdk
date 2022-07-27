@@ -102,12 +102,12 @@ func InitGenesisFrom(ctx sdk.Context, ak types.AccountKeeper, bk types.BankKeepe
 		return err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
 	}
 
-	InitGenesis(ctx, ak, bk, k, gs)
+	InitGenesis(ctx, ak, bk, k, &gs)
 	return nil
 }
 

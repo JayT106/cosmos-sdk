@@ -267,12 +267,12 @@ func (k Keeper) InitGenesisFrom(ctx sdk.Context, importPath string) error {
 		return err
 	}
 
-	var gs *authz.GenesisState
+	var gs authz.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return err
 	}
 
-	k.InitGenesis(ctx, gs)
+	k.InitGenesis(ctx, &gs)
 
 	return nil
 }

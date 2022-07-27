@@ -40,7 +40,7 @@ func (k Keeper) InitGenesisFrom(ctx sdk.Context, importPath string) error {
 		return err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	start := time.Now()
 	if err := gs.Unmarshal(bz); err != nil {
 		return err

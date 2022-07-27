@@ -134,12 +134,12 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, import
 		return nil, err
 	}
 
-	var gs *types.GenesisState
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
 	}
 
-	validators, err := InitGenesis(ctx, am.stakingKeeper, am.deliverTx, *gs, am.txEncodingConfig)
+	validators, err := InitGenesis(ctx, am.stakingKeeper, am.deliverTx, gs, am.txEncodingConfig)
 	if err != nil {
 		panic(err)
 	}
