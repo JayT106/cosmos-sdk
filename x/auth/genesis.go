@@ -59,16 +59,19 @@ func InitGenesisFrom(ctx sdk.Context, ak keeper.AccountKeeper, importPath string
 	}
 
 	bz := make([]byte, fi.Size())
-	if _, err := f.Read(bz); err != nil {
+	n, err := f.Read(bz)
+	if err != nil {
 		return err
 	}
 
-	var gs *types.GenesisState
+	fmt.Printf("%d bytes read, file size %d\n", n, fi.Size())
+
+	var gs types.GenesisState
 	if err := gs.Unmarshal(bz); err != nil {
 		return err
 	}
 
-	InitGenesis(ctx, ak, *gs)
+	InitGenesis(ctx, ak, gs)
 	return nil
 }
 
