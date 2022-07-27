@@ -194,7 +194,7 @@ func (AppModule) WeightedOperations(_ module.SimulationState) []simtypes.Weighte
 // InitGenesisFrom performs genesis initialization for the auth module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	if err := InitGenesisFrom(ctx, am.accountKeeper, path); err != nil {
+	if err := InitGenesisFrom(ctx, cdc, am.accountKeeper, path); err != nil {
 		return nil, err
 	}
 
@@ -204,5 +204,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the auth module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	return ExportGenesisTo(ctx, am.accountKeeper, path)
+	return ExportGenesisTo(ctx, cdc, am.accountKeeper, path)
 }
