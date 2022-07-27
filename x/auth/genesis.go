@@ -17,6 +17,8 @@ import (
 func InitGenesis(ctx sdk.Context, ak keeper.AccountKeeper, data types.GenesisState) {
 	ak.SetParams(ctx, data.Params)
 
+	fmt.Printf("data.Param %s\n", data.Params)
+
 	accounts, err := types.UnpackAccounts(data.Accounts)
 	if err != nil {
 		panic(err)

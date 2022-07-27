@@ -126,6 +126,7 @@ func (GenesisAccountIterator) IterateGenesisAccounts(
 // PackAccounts converts GenesisAccounts to Any slice
 func PackAccounts(accounts GenesisAccounts) ([]*types.Any, error) {
 	accountsAny := make([]*types.Any, len(accounts))
+	fmt.Printf("PackAccounts: %d\n", len(accountsAny))
 	for i, acc := range accounts {
 		msg, ok := acc.(proto.Message)
 		if !ok {
@@ -144,6 +145,7 @@ func PackAccounts(accounts GenesisAccounts) ([]*types.Any, error) {
 // UnpackAccounts converts Any slice to GenesisAccounts
 func UnpackAccounts(accountsAny []*types.Any) (GenesisAccounts, error) {
 	accounts := make(GenesisAccounts, len(accountsAny))
+	fmt.Printf("UnpackAccounts: %d\n", len(accountsAny))
 	for i, any := range accountsAny {
 		acc, ok := any.GetCachedValue().(GenesisAccount)
 		if !ok {
