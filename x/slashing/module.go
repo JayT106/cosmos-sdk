@@ -206,7 +206,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // InitGenesisFrom performs genesis initialization for the slashing module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	if err := InitGenesisFrom(ctx, am.keeper, am.stakingKeeper, path); err != nil {
+	if err := InitGenesisFrom(ctx, cdc, am.keeper, am.stakingKeeper, path); err != nil {
 		return nil, err
 	}
 	return []abci.ValidatorUpdate{}, nil
@@ -215,5 +215,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the slashing module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	return ExportGenesisTo(ctx, am.keeper, path)
+	return ExportGenesisTo(ctx, cdc, am.keeper, path)
 }

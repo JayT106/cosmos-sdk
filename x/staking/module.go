@@ -206,11 +206,11 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // InitGenesisFrom performs genesis initialization for the staking module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	return InitGenesisFrom(ctx, am.keeper, am.accountKeeper, am.bankKeeper, path)
+	return InitGenesisFrom(ctx, cdc, am.keeper, am.accountKeeper, am.bankKeeper, path)
 }
 
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the staking module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	return ExportGenesisTo(ctx, am.keeper, path)
+	return ExportGenesisTo(ctx, cdc, am.keeper, path)
 }

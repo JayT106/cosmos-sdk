@@ -198,7 +198,7 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 // InitGenesisFrom performs genesis initialization for the bank module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	if err := am.keeper.InitGenesisFrom(ctx, path); err != nil {
+	if err := am.keeper.InitGenesisFrom(ctx, cdc, path); err != nil {
 		return nil, err
 	}
 
@@ -208,5 +208,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the bank module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	return am.keeper.ExportGenesisTo(ctx, path)
+	return am.keeper.ExportGenesisTo(ctx, cdc, path)
 }

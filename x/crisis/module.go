@@ -172,7 +172,7 @@ func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.Val
 // InitGenesisFrom performs genesis initialization for the crisis module. It returns
 // no validator updates.
 func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
-	am.keeper.InitGenesisFrom(ctx, path)
+	am.keeper.InitGenesisFrom(ctx, cdc, path)
 	if !am.skipGenesisInvariants {
 		am.keeper.AssertInvariants(ctx)
 	}
@@ -183,5 +183,5 @@ func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path s
 // ExportGenesisTo exports the genesis state as raw bytes files to the destination
 // path for the crisis module.
 func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
-	return am.keeper.ExportGenesisTo(ctx, path)
+	return am.keeper.ExportGenesisTo(ctx, cdc, path)
 }

@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"time"
 
-	"github.com/cosmos/cosmos-sdk/telemetry"
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis/types"
 )
@@ -22,7 +21,7 @@ func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	return types.NewGenesisState(constantFee)
 }
 
-func (k Keeper) InitGenesisFrom(ctx sdk.Context, importPath string) error {
+func (k Keeper) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, importPath string) error {
 	fp := path.Join(importPath, fmt.Sprintf("genesis_%s.bin", types.ModuleName))
 	f, err := os.OpenFile(fp, os.O_RDONLY, 0666)
 	if err != nil {
@@ -41,17 +40,12 @@ func (k Keeper) InitGenesisFrom(ctx sdk.Context, importPath string) error {
 	}
 
 	var gs types.GenesisState
-	start := time.Now()
-	if err := gs.Unmarshal(bz); err != nil {
-		return err
-	}
-	telemetry.MeasureSince(start, "InitGenesis", "crisis", "unmarshal")
-
+	cdc.MustUnmarshalJSON(bz, &gs)
 	k.SetConstantFee(ctx, gs.ConstantFee)
 	return nil
 }
 
-func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
+func (k Keeper) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
@@ -64,11 +58,7 @@ func (k Keeper) ExportGenesisTo(ctx sdk.Context, exportPath string) error {
 	defer f.Close()
 
 	gs := k.ExportGenesis(ctx)
-	bz, err := gs.Marshal()
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
-	}
-
+	bz := cdc.MustMarshalJSON(gs)
 	if _, err = f.Write(bz); err != nil {
 		return err
 	}

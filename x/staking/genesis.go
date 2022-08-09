@@ -9,6 +9,7 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/keeper"
@@ -267,6 +268,7 @@ func validateGenesisStateValidators(validators []types.Validator) error {
 
 func InitGenesisFrom(
 	ctx sdk.Context,
+	cdc codec.JSONCodec,
 	k keeper.Keeper,
 	ak types.AccountKeeper,
 	bk types.BankKeeper,
@@ -290,14 +292,11 @@ func InitGenesisFrom(
 	}
 
 	var gs types.GenesisState
-	if err := gs.Unmarshal(bz); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
-	}
-
+	cdc.MustUnmarshalJSON(bz, &gs)
 	return InitGenesis(ctx, k, ak, bk, &gs), nil
 }
 
-func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error {
+func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, k keeper.Keeper, exportPath string) error {
 	if err := os.MkdirAll(exportPath, 0755); err != nil {
 		return err
 	}
@@ -310,11 +309,7 @@ func ExportGenesisTo(ctx sdk.Context, k keeper.Keeper, exportPath string) error 
 	defer f.Close()
 
 	gs := ExportGenesis(ctx, k)
-	bz, err := gs.Marshal()
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %s", types.ModuleName, err)
-	}
-
+	bz := cdc.MustMarshalJSON(gs)
 	if _, err = f.Write(bz); err != nil {
 		return err
 	}
