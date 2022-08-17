@@ -236,27 +236,30 @@ func TestManager_ExportGenesis(t *testing.T) {
 
 	want := map[string]json.RawMessage{
 		"module1": json.RawMessage(`{"key1": "value1"}`),
-		"module2": json.RawMessage(`{"key2": "value2"}`),
-	}
-	require.Equal(t, want, mm.ExportGenesis(ctx, cdc))
+		"module2": json.RawMessage(`{"key2": "value2"}`)}
+
+	actual, err := mm.ExportGenesis(ctx, cdc)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
 }
 
 func TestManager_BeginBlock(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	t.Cleanup(mockCtrl.Finish)
 
-	mockAppModule1 := mocks.NewMockAppModule(mockCtrl)
-	mockAppModule2 := mocks.NewMockAppModule(mockCtrl)
-	mockAppModule1.EXPECT().Name().Times(2).Return("module1")
-	mockAppModule2.EXPECT().Name().Times(2).Return("module2")
-	mm := module.NewManager(mockAppModule1, mockAppModule2)
+	mockBeginBlockAppModule1 := mocks.NewMockBeginBlockAppModule(mockCtrl)
+	mockBeginBlockAppModule2 := mocks.NewMockBeginBlockAppModule(mockCtrl)
+
+	mockBeginBlockAppModule1.EXPECT().Name().Times(2).Return("module1")
+	mockBeginBlockAppModule2.EXPECT().Name().Times(2).Return("module2")
+	mm := module.NewManager(mockBeginBlockAppModule1, mockBeginBlockAppModule2)
 	require.NotNil(t, mm)
 	require.Equal(t, 2, len(mm.Modules))
 
 	req := abci.RequestBeginBlock{Hash: []byte("test")}
 
-	mockAppModule1.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
-	mockAppModule2.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
+	mockBeginBlockAppModule1.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
+	mockBeginBlockAppModule2.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
 	mm.BeginBlock(sdk.Context{}, req)
 }
 
@@ -264,23 +267,24 @@ func TestManager_EndBlock(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	t.Cleanup(mockCtrl.Finish)
 
-	mockAppModule1 := mocks.NewMockAppModule(mockCtrl)
-	mockAppModule2 := mocks.NewMockAppModule(mockCtrl)
-	mockAppModule1.EXPECT().Name().Times(2).Return("module1")
-	mockAppModule2.EXPECT().Name().Times(2).Return("module2")
-	mm := module.NewManager(mockAppModule1, mockAppModule2)
+	mockEndBlockAppModule1 := mocks.NewMockEndBlockAppModule(mockCtrl)
+	mockEndBlockAppModule2 := mocks.NewMockEndBlockAppModule(mockCtrl)
+
+	mockEndBlockAppModule1.EXPECT().Name().Times(2).Return("module1")
+	mockEndBlockAppModule2.EXPECT().Name().Times(2).Return("module2")
+	mm := module.NewManager(mockEndBlockAppModule1, mockEndBlockAppModule2)
 	require.NotNil(t, mm)
 	require.Equal(t, 2, len(mm.Modules))
 
 	req := abci.RequestEndBlock{Height: 10}
 
-	mockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
-	mockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1)
+	mockEndBlockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
+	mockEndBlockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1)
 	ret := mm.EndBlock(sdk.Context{}, req)
 	require.Equal(t, []abci.ValidatorUpdate{{}}, ret.ValidatorUpdates)
 
 	// test panic
-	mockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
-	mockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
+	mockEndBlockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
+	mockEndBlockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
 	require.Panics(t, func() { mm.EndBlock(sdk.Context{}, req) })
 }

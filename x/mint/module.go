@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -80,6 +81,22 @@ func (AppModuleBasic) GetTxCmd() *cobra.Command { return nil }
 // GetQueryCmd returns the root query command for the mint module.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
+}
+
+// ValidateGenesisFrom performs genesis state validation for the mint module.
+func (b AppModuleBasic) ValidateGenesisFrom(cdc codec.JSONCodec, config client.TxEncodingConfig, filePath string) error {
+	f, err := module.OpenGenesisModuleFile(filepath.Join(filePath, types.ModuleName), types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return err
+	}
+
+	return b.ValidateGenesis(cdc, config, bz)
 }
 
 // AppModule implements an application module for the mint module.
@@ -176,4 +193,19 @@ func (am AppModule) RegisterStoreDecoder(sdr sdk.StoreDecoderRegistry) {
 // WeightedOperations doesn't return any mint module operation.
 func (AppModule) WeightedOperations(_ module.SimulationState) []simtypes.WeightedOperation {
 	return nil
+}
+
+// InitGenesisFrom performs genesis initialization for the mint module. It returns
+// no validator updates.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	if err := InitGenesisFrom(ctx, cdc, am.keeper, am.authKeeper, path); err != nil {
+		return nil, err
+	}
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo exports the genesis state as raw bytes files to the destination
+// path for the mint module.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return ExportGenesisTo(ctx, cdc, am.keeper, path)
 }

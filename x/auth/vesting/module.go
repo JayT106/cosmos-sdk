@@ -71,6 +71,11 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return nil
 }
 
+// ValidateGenesisFrom performs genesis state validation. Currently, this is a no-op.
+func (AppModuleBasic) ValidateGenesisFrom(_ codec.JSONCodec, _ client.TxEncodingConfig, path string) error {
+	return nil
+}
+
 // AppModule extends the AppModuleBasic implementation by implementing the
 // AppModule interface.
 type AppModule struct {
@@ -122,3 +127,13 @@ func (am AppModule) ExportGenesis(_ sdk.Context, cdc codec.JSONCodec) json.RawMe
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }
+
+// InitGenesisFrom performs a no-op.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo performs a no-op.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return nil
+}

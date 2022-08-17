@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 )
@@ -39,4 +41,35 @@ func ExportGenesis(ctx sdk.Context, ak keeper.AccountKeeper) *types.GenesisState
 	})
 
 	return types.NewGenesisState(params, genAccounts)
+}
+
+func InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, ak keeper.AccountKeeper, importPath string) error {
+	f, err := module.OpenGenesisModuleFile(importPath, types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return err
+	}
+
+	var gs types.GenesisState
+	cdc.MustUnmarshalJSON(bz, &gs)
+	InitGenesis(ctx, ak, gs)
+	return nil
+}
+
+// ExportGenesisTo returns a GenesisState for a given context, keeper and export path
+func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, ak keeper.AccountKeeper, exportPath string) error {
+	f, err := module.CreateGenesisExportFile(exportPath, types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := ExportGenesis(ctx, ak)
+	bz := cdc.MustMarshalJSON(gs)
+	return module.FileWrite(f, bz)
 }

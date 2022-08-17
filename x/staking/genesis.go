@@ -7,8 +7,10 @@ import (
 	abci "github.com/tendermint/tendermint/abci/types"
 	tmtypes "github.com/tendermint/tendermint/types"
 
+	"github.com/cosmos/cosmos-sdk/codec"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -261,4 +263,40 @@ func validateGenesisStateValidators(validators []types.Validator) error {
 	}
 
 	return nil
+}
+
+func InitGenesisFrom(
+	ctx sdk.Context,
+	cdc codec.JSONCodec,
+	k keeper.Keeper,
+	ak types.AccountKeeper,
+	bk types.BankKeeper,
+	importPath string,
+) ([]abci.ValidatorUpdate, error) {
+	f, err := module.OpenGenesisModuleFile(importPath, types.ModuleName)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return nil, err
+	}
+
+	var gs types.GenesisState
+	cdc.MustUnmarshalJSON(bz, &gs)
+	return InitGenesis(ctx, k, ak, bk, &gs), nil
+}
+
+func ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, k keeper.Keeper, exportPath string) error {
+	f, err := module.CreateGenesisExportFile(exportPath, types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	gs := ExportGenesis(ctx, k)
+	bz := cdc.MustMarshalJSON(gs)
+	return module.FileWrite(f, bz)
 }

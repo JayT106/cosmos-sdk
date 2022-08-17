@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/store/cachekv"
+	"github.com/tendermint/tendermint/libs/log"
 
 	"github.com/cosmos/iavl"
 	"github.com/stretchr/testify/require"
 	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/log"
 	dbm "github.com/tendermint/tm-db"
 
 	"github.com/cosmos/cosmos-sdk/store/types"

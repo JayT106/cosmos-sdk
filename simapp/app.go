@@ -1,6 +1,7 @@
 package simapp
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -174,6 +175,9 @@ type SimApp struct {
 
 	// module configurator
 	configurator module.Configurator
+
+	// the root folder of the app config and data
+	homepath string
 }
 
 func init() {
@@ -221,6 +225,7 @@ func NewSimApp(
 		keys:              keys,
 		tkeys:             tkeys,
 		memKeys:           memKeys,
+		homepath:          homePath,
 	}
 
 	app.ParamsKeeper = initParamsKeeper(appCodec, legacyAmino, keys[paramstypes.StoreKey], tkeys[paramstypes.TStoreKey])
@@ -428,10 +433,18 @@ func (app *SimApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 
 // InitChainer application update at chain initialization
 func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	var jsonObj = make(map[string]json.RawMessage)
+	jsonObj["module_genesis_state"] = []byte("true")
+	loadAppStateFromFolder, _ := json.Marshal(jsonObj)
 	var genesisState GenesisState
-	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
-		panic(err)
+	if bytes.Equal(loadAppStateFromFolder, req.AppStateBytes) {
+		app.mm.SetGenesisPath(filepath.Join(app.homepath, "config", "genesis"))
+	} else {
+		if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
+			panic(err)
+		}
 	}
+
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }

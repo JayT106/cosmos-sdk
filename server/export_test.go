@@ -162,7 +162,7 @@ func setupApp(t *testing.T, tempDir string) (*simapp.SimApp, context.Context, *t
 				simApp = simapp.NewSimApp(logger, db, nil, true, map[int64]bool{}, "", 0, encCfg, appOptons)
 			}
 
-			return simApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs)
+			return simApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, "")
 		}, tempDir)
 
 	ctx := context.Background()

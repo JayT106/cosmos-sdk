@@ -115,6 +115,11 @@ func (AppModuleBasic) ValidateGenesis(_ codec.JSONCodec, config client.TxEncodin
 	return nil
 }
 
+// ValidateGenesisFrom is always successful, as we ignore the value
+func (AppModuleBasic) ValidateGenesisFrom(_ codec.JSONCodec, _ client.TxEncodingConfig, _ string) error {
+	return nil
+}
+
 // ExportGenesis is always empty, as InitGenesis does nothing either
 func (am AppModule) ExportGenesis(_ sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	return am.DefaultGenesis(cdc)
@@ -128,4 +133,19 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 // CONTRACT: this is registered in BeginBlocker *before* all other modules' BeginBlock functions
 func (am AppModule) BeginBlock(ctx sdk.Context, req abci.RequestBeginBlock) {
 	BeginBlocker(am.keeper, ctx, req)
+}
+
+// EndBlock does nothing
+func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
+	return []abci.ValidatorUpdate{}
+}
+
+// InitGenesisFrom is ignored, no sense in serializing future upgrades
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo performs a no-op.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return nil
 }

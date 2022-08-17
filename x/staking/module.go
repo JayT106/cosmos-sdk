@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"path/filepath"
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
@@ -87,6 +88,22 @@ func (AppModuleBasic) GetTxCmd() *cobra.Command {
 // GetQueryCmd returns no root query command for the staking module.
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
 	return cli.GetQueryCmd()
+}
+
+// ValidateGenesisFrom performs genesis state validation for the staking module.
+func (b AppModuleBasic) ValidateGenesisFrom(cdc codec.JSONCodec, txEncodingConfig client.TxEncodingConfig, filePath string) error {
+	f, err := module.OpenGenesisModuleFile(filepath.Join(filePath, types.ModuleName), types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return err
+	}
+
+	return b.ValidateGenesis(cdc, txEncodingConfig, bz)
 }
 
 // AppModule implements an application module for the staking module.
@@ -201,4 +218,16 @@ func (am AppModule) WeightedOperations(simState module.SimulationState) []simtyp
 	return simulation.WeightedOperations(
 		simState.AppParams, simState.Cdc, am.accountKeeper, am.bankKeeper, am.keeper,
 	)
+}
+
+// InitGenesisFrom performs genesis initialization for the staking module. It returns
+// no validator updates.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	return InitGenesisFrom(ctx, cdc, am.keeper, am.accountKeeper, am.bankKeeper, path)
+}
+
+// ExportGenesisTo exports the genesis state as raw bytes files to the destination
+// path for the staking module.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return ExportGenesisTo(ctx, cdc, am.keeper, path)
 }

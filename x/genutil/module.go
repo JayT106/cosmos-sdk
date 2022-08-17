@@ -3,6 +3,7 @@ package genutil
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -51,6 +52,22 @@ func (b AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, txEncodingConfig cl
 	}
 
 	return types.ValidateGenesis(&data, txEncodingConfig.TxJSONDecoder())
+}
+
+// ValidateGenesisFrom performs genesis state validation for the genutil module.
+func (b AppModuleBasic) ValidateGenesisFrom(cdc codec.JSONCodec, config client.TxEncodingConfig, filePath string) error {
+	f, err := module.OpenGenesisModuleFile(filepath.Join(filePath, types.ModuleName), types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return err
+	}
+
+	return b.ValidateGenesis(cdc, config, bz)
 }
 
 // RegisterRESTRoutes registers the REST routes for the genutil module.
@@ -110,3 +127,39 @@ func (am AppModule) ExportGenesis(_ sdk.Context, cdc codec.JSONCodec) json.RawMe
 
 // ConsensusVersion implements AppModule/ConsensusVersion.
 func (AppModule) ConsensusVersion() uint64 { return 1 }
+
+// InitGenesisFrom performs genesis initialization for the genutil module. It returns
+// no validator updates.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, importPath string) ([]abci.ValidatorUpdate, error) {
+	f, err := module.OpenGenesisModuleFile(importPath, types.ModuleName)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return nil, err
+	}
+
+	var gs types.GenesisState
+	cdc.MustUnmarshalJSON(bz, &gs)
+	validators, err := InitGenesis(ctx, am.stakingKeeper, am.deliverTx, gs, am.txEncodingConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	return validators, nil
+}
+
+// ExportGenesisTo exports the genesis state as raw bytes files to the destination
+// path for the genutil module.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, exportPath string) error {
+	f, err := module.CreateGenesisExportFile(exportPath, types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return module.FileWrite(f, am.DefaultGenesis(cdc))
+}

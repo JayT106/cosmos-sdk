@@ -3,6 +3,7 @@ package crisis
 import (
 	"encoding/json"
 	"fmt"
+	"path/filepath"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -78,6 +79,22 @@ func (AppModuleBasic) GetQueryCmd() *cobra.Command { return nil }
 // module.
 func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) {
 	types.RegisterInterfaces(registry)
+}
+
+// ValidateGenesisFrom performs genesis state validation for the crisis module.
+func (b AppModuleBasic) ValidateGenesisFrom(cdc codec.JSONCodec, config client.TxEncodingConfig, filePath string) error {
+	f, err := module.OpenGenesisModuleFile(filepath.Join(filePath, types.ModuleName), types.ModuleName)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	bz, err := module.FileRead(f)
+	if err != nil {
+		return err
+	}
+
+	return b.ValidateGenesis(cdc, config, bz)
 }
 
 // AppModule implements an application module for the crisis module.
@@ -164,4 +181,21 @@ func (AppModule) ConsensusVersion() uint64 { return 1 }
 func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
 	EndBlocker(ctx, *am.keeper)
 	return []abci.ValidatorUpdate{}
+}
+
+// InitGenesisFrom performs genesis initialization for the crisis module. It returns
+// no validator updates.
+func (am AppModule) InitGenesisFrom(ctx sdk.Context, cdc codec.JSONCodec, path string) ([]abci.ValidatorUpdate, error) {
+	am.keeper.InitGenesisFrom(ctx, cdc, path)
+	if !am.skipGenesisInvariants {
+		am.keeper.AssertInvariants(ctx)
+	}
+
+	return []abci.ValidatorUpdate{}, nil
+}
+
+// ExportGenesisTo exports the genesis state as raw bytes files to the destination
+// path for the crisis module.
+func (am AppModule) ExportGenesisTo(ctx sdk.Context, cdc codec.JSONCodec, path string) error {
+	return am.keeper.ExportGenesisTo(ctx, cdc, path)
 }

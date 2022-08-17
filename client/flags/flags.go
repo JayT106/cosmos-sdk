@@ -74,6 +74,7 @@ const (
 	FlagKeyAlgorithm     = "algo"
 	FlagFeeAccount       = "fee-account"
 	FlagReverse          = "reverse"
+	FlagGenesisFilePath  = "genesis-path"
 
 	// Tendermint logging flags
 	FlagLogLevel  = "log_level"
