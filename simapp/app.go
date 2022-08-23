@@ -3,7 +3,9 @@
 package simapp
 
 import (
+	"bytes"
 	_ "embed"
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
@@ -161,6 +163,9 @@ type SimApp struct {
 
 	// simulation manager
 	sm *module.SimulationManager
+
+	// the root folder of the app config and data
+	homepath string
 }
 
 func init() {
@@ -299,6 +304,18 @@ func (app *SimApp) Name() string { return app.BaseApp.Name() }
 
 // InitChainer application update at chain initialization
 func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	jsonObj := make(map[string]json.RawMessage)
+	jsonObj["module_genesis_state"] = []byte("true")
+	loadAppStateFromFolder, _ := json.Marshal(jsonObj)
+	var genesisState GenesisState
+	if bytes.Equal(loadAppStateFromFolder, req.AppStateBytes) {
+		app.ModuleManager.SetGenesisPath(filepath.Join(app.homepath, "config", "genesis"))
+	} else {
+		if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
+			panic(err)
+		}
+	}
+
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.ModuleManager.GetVersionMap())
 	return app.App.InitChainer(ctx, req)
 }
