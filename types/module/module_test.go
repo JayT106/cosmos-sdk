@@ -218,8 +218,8 @@ func TestManager_BeginBlock(t *testing.T) {
 
 	req := abci.RequestBeginBlock{Hash: []byte("test")}
 
-	mockBeginBlockAppModule1.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
-	mockBeginBlockAppModule2.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
+	mockAppModule1.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
+	mockAppModule2.EXPECT().BeginBlock(gomock.Any(), gomock.Eq(req)).Times(1)
 	mm.BeginBlock(sdk.Context{}, req)
 }
 
@@ -238,13 +238,13 @@ func TestManager_EndBlock(t *testing.T) {
 
 	req := abci.RequestEndBlock{Height: 10}
 
-	mockEndBlockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
-	mockEndBlockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1)
+	mockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
+	mockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1)
 	ret := mm.EndBlock(sdk.Context{}, req)
 	require.Equal(t, []abci.ValidatorUpdate{{}}, ret.ValidatorUpdates)
 
 	// test panic
-	mockEndBlockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
-	mockEndBlockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
+	mockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
+	mockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
 	require.Panics(t, func() { mm.EndBlock(sdk.Context{}, req) })
 }
