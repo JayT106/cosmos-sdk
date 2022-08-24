@@ -3,6 +3,7 @@ package module_test
 import (
 	"encoding/json"
 	"errors"
+	"path/filepath"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -247,4 +248,117 @@ func TestManager_EndBlock(t *testing.T) {
 	mockAppModule1.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
 	mockAppModule2.EXPECT().EndBlock(gomock.Any(), gomock.Eq(req)).Times(1).Return([]abci.ValidatorUpdate{{}})
 	require.Panics(t, func() { mm.EndBlock(sdk.Context{}, req) })
+}
+
+func TestManager_InitGenesisFrom(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	t.Cleanup(mockCtrl.Finish)
+
+	mockAppModule1 := mocks.NewMockAppModule(mockCtrl)
+	mockAppModule2 := mocks.NewMockAppModule(mockCtrl)
+	mockAppModule1.EXPECT().Name().Times(2).Return("module1")
+	mockAppModule2.EXPECT().Name().Times(2).Return("module2")
+	mm := module.NewManager(mockAppModule1, mockAppModule2)
+	require.NotNil(t, mm)
+	require.Equal(t, 2, len(mm.Modules))
+
+	ctx := sdk.NewContext(nil, tmproto.Header{}, false, log.NewNopLogger())
+	interfaceRegistry := types.NewInterfaceRegistry()
+	cdc := codec.NewProtoCodec(interfaceRegistry)
+	genesisPath := "genesis"
+
+	// panic when there are no genesis path and the genesis data as the input parameters
+	require.Panics(t, func() { mm.InitGenesis(ctx, cdc, nil) })
+
+	// set the genesis path for letting the module manager to call module.InitGenesisFrom
+	mm.SetGenesisPath(genesisPath)
+
+	// this should panic since the validator set is empty even after init genesis
+	mockAppModule1.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module1"))).Times(1).Return([]abci.ValidatorUpdate{}, nil)
+	mockAppModule2.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module2"))).Times(1).Return([]abci.ValidatorUpdate{}, nil)
+	require.Panics(t, func() { mm.InitGenesis(ctx, cdc, nil) })
+
+	// when the module.InitGenesisFrom returns an error, InitGenesis should panic
+	mockAppModule1.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module1"))).Times(1).Return(nil, errors.New("error"))
+	require.Panics(t, func() { mm.InitGenesis(ctx, cdc, nil) })
+
+	// only once module allows to update the validator sets
+	mockAppModule1.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module1"))).Times(1).Return([]abci.ValidatorUpdate{{}}, nil)
+	mockAppModule2.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module2"))).Times(1).Return([]abci.ValidatorUpdate{{}}, nil)
+	require.Panics(t, func() { mm.InitGenesis(ctx, cdc, nil) })
+
+	// a valid case to init the module genesis
+	mockAppModule1.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module1"))).Times(1).Return([]abci.ValidatorUpdate{{}}, nil)
+	mockAppModule2.EXPECT().InitGenesisFrom(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module2"))).Times(1).Return([]abci.ValidatorUpdate{}, nil)
+	require.NotPanics(t, func() { mm.InitGenesis(ctx, cdc, nil) })
+}
+
+func TestManager_ExportGenesisTo(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	t.Cleanup(mockCtrl.Finish)
+
+	mockAppModule1 := mocks.NewMockAppModule(mockCtrl)
+	mockAppModule2 := mocks.NewMockAppModule(mockCtrl)
+	mockAppModule1.EXPECT().Name().Times(2).Return("module1")
+	mockAppModule2.EXPECT().Name().Times(2).Return("module2")
+	mm := module.NewManager(mockAppModule1, mockAppModule2)
+	require.NotNil(t, mm)
+	require.Equal(t, 2, len(mm.Modules))
+
+	ctx := sdk.Context{}
+	interfaceRegistry := types.NewInterfaceRegistry()
+	cdc := codec.NewProtoCodec(interfaceRegistry)
+	genesisPath := "genesis"
+
+	// we can expect the module manager to call module.ExportGenesis if there is no genesis path has been set.
+	mockAppModule1.EXPECT().ExportGenesis(gomock.Eq(ctx), gomock.Eq(cdc)).Times(1).Return(json.RawMessage(`{"key1": "value1"}`))
+	mockAppModule2.EXPECT().ExportGenesis(gomock.Eq(ctx), gomock.Eq(cdc)).Times(1).Return(json.RawMessage(`{"key2": "value2"}`))
+
+	want := map[string]json.RawMessage{
+		"module1": json.RawMessage(`{"key1": "value1"}`),
+		"module2": json.RawMessage(`{"key2": "value2"}`)}
+	actual, err := mm.ExportGenesis(ctx, cdc)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+
+	// set the genesis path for letting the module manager to call module.ExportGenesisTo
+	mm.SetGenesisPath(genesisPath)
+
+	// if the ExportGenesisTo returns no errors, the module manager will return an empty string map
+	mockAppModule1.EXPECT().ExportGenesisTo(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module1"))).Times(1).Return(nil)
+	mockAppModule2.EXPECT().ExportGenesisTo(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module2"))).Times(1).Return(nil)
+	want = map[string]json.RawMessage{}
+
+	actual, err = mm.ExportGenesis(ctx, cdc)
+	require.NoError(t, err)
+	require.Equal(t, want, actual)
+
+	// if the ExportGenesisTo returns an error, the ExportGenesis will returns the error.
+	mockAppModule1.EXPECT().ExportGenesisTo(gomock.Eq(ctx), gomock.Eq(cdc), gomock.Eq(filepath.Join(genesisPath, "module1"))).Times(1).Return(errors.New("error"))
+	actual, err = mm.ExportGenesis(ctx, cdc)
+	require.Error(t, err)
+	require.Equal(t, map[string]json.RawMessage(nil), actual)
+}
+
+func TestValidateGenesisFrom(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	t.Cleanup(mockCtrl.Finish)
+
+	mockAppModuleBasic := mocks.NewMockAppModuleBasic(mockCtrl)
+	mockAppModuleBasic.EXPECT().Name().AnyTimes().Return("mockAppModuleBasic")
+
+	mm := module.NewBasicManager(mockAppModuleBasic)
+	require.Equal(t, mm["mockAppModuleBasic"], mockAppModuleBasic)
+	genesisPath := "genesis"
+
+	// validate the error returns from the module ValidateGenesisFrom
+	mockAppModuleBasic.EXPECT().ValidateGenesisFrom(gomock.Eq(nil), gomock.Eq(nil), gomock.Eq(genesisPath)).Times(1).Return(errFoo)
+	require.True(t, errors.Is(errFoo, mm.ValidateGenesisFrom(nil, nil, genesisPath)))
+
+	// validate the module genesis return no errors from given path
+	mockAppModuleBasic.EXPECT().ValidateGenesisFrom(gomock.Eq(nil), gomock.Eq(nil), gomock.Eq(genesisPath)).Times(1).Return(nil)
+	require.Nil(t, mm.ValidateGenesisFrom(nil, nil, genesisPath))
+
+	// validate genesis returns nil if there is empty module
+	require.Nil(t, module.NewBasicManager().ValidateGenesisFrom(nil, nil, genesisPath))
 }
