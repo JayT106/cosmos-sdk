@@ -594,7 +594,7 @@ func DefaultMigrationsOrder(modules []string) []string {
 }
 
 func CreateGenesisExportFile(exportPath string, moduleName string) (*os.File, error) {
-	if err := os.MkdirAll(exportPath, 0o755); err != nil {
+	if err := os.MkdirAll(exportPath, 0o700); err != nil {
 		return nil, fmt.Errorf("failed to create directory: %w", err)
 	}
 
@@ -609,7 +609,7 @@ func CreateGenesisExportFile(exportPath string, moduleName string) (*os.File, er
 
 func OpenGenesisModuleFile(importPath string, moduleName string) (*os.File, error) {
 	fp := filepath.Join(importPath, fmt.Sprintf("genesis_%s.bin", moduleName))
-	f, err := os.OpenFile(fp, os.O_RDONLY, 0o666)
+	f, err := os.OpenFile(fp, os.O_RDONLY, 0o600)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
