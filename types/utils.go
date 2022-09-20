@@ -95,6 +95,16 @@ func NewLevelDB(name, dir string) (db dbm.DB, err error) {
 	return dbm.NewDB(name, backend, dir)
 }
 
+func NewDBWithOption(name, dir string, opts dbm.Options) (db dbm.DB, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("couldn't create db: %v", r)
+		}
+	}()
+
+	return dbm.NewDBwithOptions(name, backend, dir, opts)
+}
+
 // copy bytes
 func CopyBytes(bz []byte) (ret []byte) {
 	if bz == nil {
