@@ -29,10 +29,25 @@ func (app *SimApp) ExportAppStateAndValidators(
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState := app.mm.ExportGenesis(ctx, app.appCodec)
-	appState, err := json.MarshalIndent(genState, "", "  ")
+	app.mm.SetGenesisPath(app.exportpath)
+	genState, err := app.mm.ExportGenesis(ctx, app.appCodec)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
+	}
+
+	var appState []byte
+	if app.exportpath != "" {
+		jsonObj := make(map[string]json.RawMessage)
+		jsonObj["module_genesis_state"] = []byte("true")
+		appState, err = json.MarshalIndent(jsonObj, "", "  ")
+		if err != nil {
+			return servertypes.ExportedApp{}, err
+		}
+	} else {
+		appState, err = json.MarshalIndent(genState, "", "  ")
+		if err != nil {
+			return servertypes.ExportedApp{}, err
+		}
 	}
 
 	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)

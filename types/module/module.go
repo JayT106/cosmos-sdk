@@ -29,8 +29,11 @@ needlessly defining many placeholder functions
 package module
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/gorilla/mux"
@@ -239,6 +242,7 @@ type Manager struct {
 	OrderBeginBlockers []string
 	OrderEndBlockers   []string
 	OrderMigrations    []string
+	GenesisPath        string
 }
 
 // NewManager creates a new Manager object
@@ -256,6 +260,7 @@ func NewManager(modules ...AppModule) *Manager {
 		OrderExportGenesis: modulesStr,
 		OrderBeginBlockers: modulesStr,
 		OrderEndBlockers:   modulesStr,
+		GenesisPath:        "",
 	}
 }
 
@@ -319,12 +324,29 @@ func (m *Manager) RegisterServices(cfg Configurator) {
 // InitGenesis performs init genesis functionality for modules
 func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData map[string]json.RawMessage) abci.ResponseInitChain {
 	var validatorUpdates []abci.ValidatorUpdate
+	ctx.Logger().Info("initializing blockchain state from genesis.json")
+	initWithPath := (len(m.GenesisPath) != 0)
 	for _, moduleName := range m.OrderInitGenesis {
-		if genesisData[moduleName] == nil {
+		if (!initWithPath && genesisData[moduleName] == nil) ||
+			(initWithPath && m.Modules[moduleName] == nil) {
 			continue
 		}
+		ctx.Logger().Info("running initialization for module", "module", moduleName)
 
-		moduleValUpdates := m.Modules[moduleName].InitGenesis(ctx, cdc, genesisData[moduleName])
+		var moduleValUpdates []abci.ValidatorUpdate
+		if initWithPath {
+			modulePath := filepath.Join(m.GenesisPath, moduleName)
+			ctx.Logger().Info("loading module genesis state from", "path", modulePath)
+
+			bz, err := FileRead(modulePath, moduleName)
+			if err != nil {
+				panic(fmt.Sprintf("failed to read the genesis state from file: %v", err))
+			}
+
+			moduleValUpdates = m.Modules[moduleName].InitGenesis(ctx, cdc, bz)
+		} else {
+			moduleValUpdates = m.Modules[moduleName].InitGenesis(ctx, cdc, genesisData[moduleName])
+		}
 
 		// use these validator updates if provided, the module manager assumes
 		// only one module will update the validator set
@@ -342,13 +364,26 @@ func (m *Manager) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, genesisData 
 }
 
 // ExportGenesis performs export genesis functionality for modules
-func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) map[string]json.RawMessage {
+func (m *Manager) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) (map[string]json.RawMessage, error) {
 	genesisData := make(map[string]json.RawMessage)
-	for _, moduleName := range m.OrderExportGenesis {
-		genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
+
+	if len(m.GenesisPath) > 0 {
+		for _, moduleName := range m.OrderExportGenesis {
+			modulePath := filepath.Join(m.GenesisPath, moduleName)
+			fmt.Printf("exporting module: %s,path: %s\n", moduleName, modulePath)
+
+			bz := m.Modules[moduleName].ExportGenesis(ctx, cdc)
+			if err := fileWrite(modulePath, moduleName, bz); err != nil {
+				return nil, fmt.Errorf("ExportGenesis to file failed, module=%s err=%v", moduleName, err)
+			}
+		}
+	} else {
+		for _, moduleName := range m.OrderExportGenesis {
+			genesisData[moduleName] = m.Modules[moduleName].ExportGenesis(ctx, cdc)
+		}
 	}
 
-	return genesisData
+	return genesisData, nil
 }
 
 // assertNoForgottenModules checks that we didn't forget any modules in the
@@ -551,6 +586,11 @@ func (m *Manager) ModuleNames() []string {
 	return ms
 }
 
+// SetGenesisPath sets the genesis binaries export/import path.
+func (m *Manager) SetGenesisPath(path string) {
+	m.GenesisPath = path
+}
+
 // DefaultMigrationsOrder returns a default migrations order: ascending alphabetical by module name,
 // except x/auth which will run last, see:
 // https://github.com/cosmos/cosmos-sdk/issues/10591
@@ -570,4 +610,121 @@ func DefaultMigrationsOrder(modules []string) []string {
 		out = append(out, authName)
 	}
 	return out
+}
+
+func createExportFile(exportPath string, moduleName string, index int) (*os.File, error) {
+	if err := os.MkdirAll(exportPath, 0o700); err != nil {
+		return nil, fmt.Errorf("failed to create directory: %w", err)
+	}
+
+	fp := filepath.Join(exportPath, fmt.Sprintf("genesis_%s_%d.bin", moduleName, index))
+	f, err := os.Create(fp)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create file: %w", err)
+	}
+
+	return f, nil
+}
+
+func openModuleStateFile(importPath string, moduleName string, index int) (*os.File, error) {
+	fp := filepath.Join(importPath, fmt.Sprintf("genesis_%s_%d.bin", moduleName, index))
+	f, err := os.OpenFile(fp, os.O_RDONLY, 0o600)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open file: %w", err)
+	}
+
+	return f, nil
+}
+
+const stateChunkSize = 100000000 // 100 MB
+
+// byteChunk returns the chunk at a given index from the full byte slice.
+func byteChunk(bz []byte, index int) []byte {
+	start := index * stateChunkSize
+	end := (index + 1) * stateChunkSize
+	switch {
+	case start >= len(bz):
+		return nil
+	case end >= len(bz):
+		return bz[start:]
+	default:
+		return bz[start:end]
+	}
+}
+
+// byteChunks calculates the number of chunks in the byte slice.
+func byteChunks(bz []byte) int {
+	bzs := len(bz)
+	if bzs%stateChunkSize == 0 {
+		return bzs / stateChunkSize
+	}
+
+	return bzs/stateChunkSize + 1
+}
+
+// fileWrite writes the module's genesis state into files, each file containing
+// maximum 100 MB of data
+func fileWrite(modulePath, moduleName string, bz []byte) error {
+	chunks := byteChunks(bz)
+	// if the genesis state is empty, still create a new file to write nothing
+	if chunks == 0 {
+		chunks++
+	}
+	totalWritten := 0
+	for i := 0; i < chunks; i++ {
+		f, err := createExportFile(modulePath, moduleName, i)
+		if err != nil {
+			return err
+		}
+
+		n, err := f.Write(byteChunk(bz, i))
+		f.Close()
+		if err != nil {
+			return fmt.Errorf("failed to write genesis file: %w", err)
+		}
+		totalWritten += n
+	}
+
+	if totalWritten != len(bz) {
+		return fmt.Errorf("genesis file was not fully written: written %d/ total %d", totalWritten, len(bz))
+	}
+
+	return nil
+}
+
+// FileRead reads the module's genesus state given the file path and the module name, returns json encoded
+// data
+func FileRead(modulePath string, moduleName string) ([]byte, error) {
+	files, err := os.ReadDir(modulePath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read folder from %s: %w", modulePath, err)
+	}
+
+	var buf bytes.Buffer
+	for i := 0; i < len(files); i++ {
+		if err := func() error {
+			f, err := openModuleStateFile(modulePath, moduleName, i)
+			if err != nil {
+				panic(fmt.Sprintf("failed to open genesis file from module %s: %v", moduleName, err))
+			}
+			defer f.Close()
+
+			fi, err := f.Stat()
+			if err != nil {
+				return fmt.Errorf("failed to stat file: %w", err)
+			}
+
+			n, err := buf.ReadFrom(f)
+			if err != nil {
+				return fmt.Errorf("failed to read file %s: %w", f.Name(), err)
+			} else if n != fi.Size() {
+				return fmt.Errorf("couldn't read entire file: %s, read: %d, file size: %d", f.Name(), n, fi.Size())
+			}
+			return nil
+		}(); err != nil {
+			return nil, err
+		}
+	}
+
+	return buf.Bytes(), nil
 }

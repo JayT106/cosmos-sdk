@@ -1,6 +1,7 @@
 package simapp
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/grpc/tmservice"
 	"github.com/cosmos/cosmos-sdk/client/rpc"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -174,6 +176,12 @@ type SimApp struct {
 
 	// module configurator
 	configurator module.Configurator
+
+	// the root folder of the app config and data
+	homepath string
+
+	// the path for the genesis state exporting
+	exportpath string
 }
 
 func init() {
@@ -266,6 +274,12 @@ func NewSimApp(
 	app.StakingKeeper = *stakingKeeper.SetHooks(
 		stakingtypes.NewMultiStakingHooks(app.DistrKeeper.Hooks(), app.SlashingKeeper.Hooks()),
 	)
+
+	app.homepath = cast.ToString(appOpts.Get(flags.FlagHome))
+	ep := cast.ToString(appOpts.Get(flags.FlagGenesisFilePath))
+	if len(ep) > 0 {
+		app.exportpath = filepath.Join(ep, "genesis")
+	}
 
 	app.AuthzKeeper = authzkeeper.NewKeeper(keys[authzkeeper.StoreKey], appCodec, app.BaseApp.MsgServiceRouter())
 
@@ -428,10 +442,24 @@ func (app *SimApp) EndBlocker(ctx sdk.Context, req abci.RequestEndBlock) abci.Re
 
 // InitChainer application update at chain initialization
 func (app *SimApp) InitChainer(ctx sdk.Context, req abci.RequestInitChain) abci.ResponseInitChain {
+	jsonObj := make(map[string]json.RawMessage)
+	jsonObj["module_genesis_state"] = []byte("true")
+	loadAppStateFromFolder, _ := json.Marshal(jsonObj)
+	buf := bytes.NewBuffer(nil)
+	if err := json.Compact(buf, req.AppStateBytes); err != nil {
+		panic(err)
+	}
+
+	if bytes.Equal(loadAppStateFromFolder, buf.Bytes()) {
+		app.mm.SetGenesisPath(filepath.Join(app.homepath, "config", "genesis"))
+		return app.mm.InitGenesis(ctx, app.appCodec, nil)
+	}
+
 	var genesisState GenesisState
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)
 	}
+
 	app.UpgradeKeeper.SetModuleVersionMap(ctx, app.mm.GetVersionMap())
 	return app.mm.InitGenesis(ctx, app.appCodec, genesisState)
 }
