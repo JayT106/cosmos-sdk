@@ -496,8 +496,8 @@ github.com/improbable-eng/grpc-web v0.15.0/go.mod h1:1sy9HKV4Jt9aEs9JSnkWlRJPuPt
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
 github.com/influxdata/influxdb1-client v0.0.0-20191209144304-8bf82d3c094d/go.mod h1:qj24IKcXYK6Iy9ceXlo3Tc+vtHo9lIhSX5JddghvEPo=
-github.com/jayt106/tm-db v0.6.7-dbOpts h1:5vEpFXcSeuzkCOqlA4NAEzpAndpSkBjutHTKGX7mCA8=
-github.com/jayt106/tm-db v0.6.7-dbOpts/go.mod h1:c8qBtYPg6BJEqtRcumSa/PQaKvw0k3wBcOY4JjF0Hs0=
+github.com/jayt106/tm-db v0.6.8-0.20220920182633-418a2d8a801f h1:SSBQ+w1i/gBoT9S2n7vXjPR4O6ZR8PR02rrGUxogAwc=
+github.com/jayt106/tm-db v0.6.8-0.20220920182633-418a2d8a801f/go.mod h1:c8qBtYPg6BJEqtRcumSa/PQaKvw0k3wBcOY4JjF0Hs0=
 github.com/jessevdk/go-flags v0.0.0-20141203071132-1679536dcc89/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/jhump/gopoet v0.0.0-20190322174617-17282ff210b3/go.mod h1:me9yfT6IJSlOL3FCfrg+L6yzUEZ+5jW6WHt4Sk+UPUI=
 github.com/jhump/gopoet v0.1.0/go.mod h1:me9yfT6IJSlOL3FCfrg+L6yzUEZ+5jW6WHt4Sk+UPUI=

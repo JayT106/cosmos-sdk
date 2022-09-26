@@ -168,7 +168,7 @@ replace (
 	github.com/gogo/gateway => github.com/notional-labs/gateway v1.1.1-0.20220417180718-8e60e17a098d
 
 	// TODO: remove this when https://github.com/tendermint/tm-db/pull/294 got merged
-	github.com/tendermint/tm-db => github.com/jayt106/tm-db v0.6.7-dbOpts
+	github.com/tendermint/tm-db => github.com/jayt106/tm-db v0.6.8-0.20220920182633-418a2d8a801f
 )
 
 retract v0.43.0
