@@ -1,4 +1,4 @@
-go 1.18
+go 1.23.0
 
 module github.com/cosmos/cosmos-sdk
 
@@ -7,7 +7,7 @@ require (
 	cosmossdk.io/core v0.2.0
 	cosmossdk.io/depinject v1.0.0-alpha.2
 	cosmossdk.io/errors v1.0.0-beta.7
-	cosmossdk.io/math v1.0.0-beta.3
+	cosmossdk.io/math v1.5.3
 	github.com/99designs/keyring v1.2.1
 	github.com/armon/go-metrics v0.4.0
 	github.com/bgentry/speakeasy v0.1.0
@@ -50,7 +50,7 @@ require (
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.12.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.10.0
 	github.com/tendermint/btcd v0.1.1
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.16.0
@@ -62,7 +62,7 @@ require (
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
 	pgregory.net/rapid v0.4.8
-	sigs.k8s.io/yaml v1.3.0
+	sigs.k8s.io/yaml v1.4.0
 )
 
 require (
@@ -106,7 +106,7 @@ require (
 	github.com/creachadair/taskgroup v0.3.2 // indirect
 	github.com/daixiang0/gci v0.6.2 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/denis-tingaikin/go-header v0.4.3 // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.4 // indirect
@@ -150,7 +150,7 @@ require (
 	github.com/golangci/revgrep v0.0.0-20220804021717-745bb2f7c2e6 // indirect
 	github.com/golangci/unconvert v0.0.0-20180507085042-28b1c447d1f4 // indirect
 	github.com/google/btree v1.0.1 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/orderedcode v0.0.1 // indirect
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
@@ -214,7 +214,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
 	github.com/petermattis/goid v0.0.0-20180202154549-b0b1615b78e5 // indirect
 	github.com/phayes/checkstyle v0.0.0-20170904204023-bfd46e6a821d // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/polyfloyd/go-errorlint v1.0.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
@@ -241,7 +241,7 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/ssgreg/nlreturn/v2 v2.2.1 // indirect
 	github.com/stbenjam/no-sprintf-host-port v0.1.1 // indirect
-	github.com/stretchr/objx v0.4.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/subosito/gotenv v1.4.0 // indirect
 	github.com/sylvia7788/contextcheck v1.0.4 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
