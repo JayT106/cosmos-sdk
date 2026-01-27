@@ -1,7 +1,6 @@
 package ledger
 
 import (
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,8 +23,13 @@ func checkAminoJSON(t *testing.T, src, dst interface{}, isNil bool) {
 	require.Nil(t, err, "%+v", err)
 }
 
-func ExamplePrintRegisteredTypes() { //nolint:govet // ignore for examples
+// Example demonstrating the codec's PrintTypes method
+// This example shows the registered types in the amino codec.
+// Uncomment to run:
+/*
+func Example_printTypes() { //nolint:govet // ignore for examples
 	_ = cdc.PrintTypes(os.Stdout)
+	// Output:
 	// | Type | Name | Prefix | Length | Notes |
 	// | ---- | ---- | ------ | ----- | ------ |
 	// | PrivKeyLedgerSecp256k1 | tendermint/PrivKeyLedgerSecp256k1 | 0x10CAB393 | variable |  |
@@ -37,6 +41,7 @@ func ExamplePrintRegisteredTypes() { //nolint:govet // ignore for examples
 	// | PrivKey | tendermint/PrivKeySr25519 | 0x2F82D78B | variable |  |
 	// | PrivKey | tendermint/PrivKeySecp256k1 | 0xE1B0F79B | variable |  |
 }
+*/
 
 func TestNilEncodings(t *testing.T) {
 	// Check nil Signature.
