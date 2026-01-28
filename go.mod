@@ -67,7 +67,6 @@ require (
 require (
 	filippo.io/edwards25519 v1.0.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
-	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
@@ -247,8 +246,8 @@ replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 
-	// CometBFT v0.39 - JayT106 fork with merge-upstream branch
-	github.com/cometbft/cometbft => github.com/JayT106/cometbft v0.0.0-20260123214422-944d05ae8278
+	// CometBFT v0.39 - JayT106 fork with jt/merge-upstream-main branch
+	github.com/cometbft/cometbft => github.com/JayT106/cometbft v0.0.0-20260128182736-215960fd03bb
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
