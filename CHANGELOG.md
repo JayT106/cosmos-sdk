@@ -44,6 +44,8 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ### Improvements
 
+* (staking) [1770](https://github.com/crypto-org-chain/cosmos-sdk/pull/1770) Optimize staking end-block queue through using pending queue slots instead of iterators.
+
 ### Bug Fixes
 
 ### Deprecated
