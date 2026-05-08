@@ -1,6 +1,6 @@
 module github.com/cosmos/cosmos-sdk/store/tools/ics23
 
-go 1.18
+go 1.21
 
 require (
 	github.com/confio/ics23/go v0.7.0
@@ -24,6 +24,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.0.1 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/onsi/ginkgo v1.16.4 // indirect

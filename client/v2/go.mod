@@ -1,6 +1,6 @@
 module github.com/cosmos/cosmos-sdk/client/v2
 
-go 1.18
+go 1.21
 
 require (
 	cosmossdk.io/api v0.1.0-alpha9
@@ -16,7 +16,7 @@ require (
 require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	golang.org/x/net v0.0.0-20220726230323-06994584191e // indirect
 	golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab // indirect

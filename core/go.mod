@@ -1,6 +1,6 @@
 module cosmossdk.io/core
 
-go 1.18
+go 1.21
 
 require (
 	cosmossdk.io/api v0.1.0-alpha9
@@ -13,7 +13,7 @@ require (
 
 require (
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171 // indirect
