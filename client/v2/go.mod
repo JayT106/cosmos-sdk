@@ -1,6 +1,6 @@
 module github.com/cosmos/cosmos-sdk/client/v2
 
-go 1.18
+go 1.23
 
 require (
 	cosmossdk.io/api v0.1.0-alpha9

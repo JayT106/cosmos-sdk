@@ -1,6 +1,6 @@
 module cosmossdk.io/core
 
-go 1.18
+go 1.23
 
 require (
 	cosmossdk.io/api v0.1.0-alpha9
@@ -23,4 +23,5 @@ require (
 	google.golang.org/genproto v0.0.0-20220725144611-272f38e5d71b // indirect
 	google.golang.org/grpc v1.48.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	pgregory.net/rapid v1.3.0 // indirect
 )
