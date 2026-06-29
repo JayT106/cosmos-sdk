@@ -1,13 +1,13 @@
 module cosmossdk.io/tx
 
-go 1.18
+go 1.24.0
 
 require (
 	cosmossdk.io/api v0.1.0-alpha9
 	cosmossdk.io/math v1.0.0-beta.3
 	github.com/cosmos/cosmos-proto v1.0.0-alpha7
-	github.com/stretchr/testify v1.8.0
-	google.golang.org/protobuf v1.28.1
+	github.com/stretchr/testify v1.9.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (

@@ -1,11 +1,11 @@
 module cosmossdk.io/depinject
 
-go 1.18
+go 1.24.0
 
 require (
 	github.com/pkg/errors v0.9.1
 	github.com/regen-network/gocuke v0.6.2
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 	gotest.tools/v3 v3.3.0
 )
@@ -17,7 +17,7 @@ require (
 	github.com/cucumber/common/messages/go/v17 v17.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/lib/pq v1.10.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
