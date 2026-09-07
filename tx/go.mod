@@ -1,6 +1,6 @@
 module cosmossdk.io/tx
 
-go 1.18
+go 1.26.0
 
 require (
 	cosmossdk.io/api v0.1.0-alpha9
@@ -13,6 +13,7 @@ require (
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
